@@ -1,0 +1,19 @@
+# Core dependencies
+langchain>=0.1.0
+langchain-community>=0.0.10
+langchain-text-splitters>=0.0.1
+chromadb>=0.4.18  # Vector storage
+
+# Document processing
+pypdf>=3.15.1
+
+# Testing
+pytest>=7.4.0
+
+# AWS Integration
+boto3>=1.28.0
+botocore>=1.31.0
+
+# Local model support (for Ollama)
+# Uncomment if using Ollama locally
+# ollama>=0.1.0
