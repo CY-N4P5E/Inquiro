@@ -2,12 +2,12 @@
 import argparse
 import os
 import shutil
+import glob
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding import get_embedding
 from langchain_community.vectorstores import FAISS
-import glob
 
 
 FAISS_PATH = "faiss_index"
