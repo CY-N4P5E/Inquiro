@@ -1,5 +1,10 @@
 from query_data import query_rag
-from langchain_community.llms.ollama import Ollama
+# Import from the new langchain-ollama package to address deprecation warning
+try:
+    from langchain_ollama import OllamaLLM as Ollama
+except ImportError:
+    # Fallback to community version if langchain-ollama is not installed
+    from langchain_community.llms.ollama import Ollama
 
 EVAL_PROMPT = """
 Expected Response: {expected_response}

@@ -1,20 +1,21 @@
+
 import argparse
 import os
 import shutil
-from langchain.document_loaders.pdf import PyPDFDirectoryLoader
+from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
-from get_embedding_function import get_embedding_function
-from langchain.vectorstores.chroma import Chroma
+from get_embedding import get_embedding
+from langchain_community.vectorstores import FAISS
+import glob
 
 
-CHROMA_PATH = "chroma"
+FAISS_PATH = "faiss_index"
 DATA_PATH = "data"
 
 
 def main():
-
-    # Check if the database should be cleared (using the --clear flag).
+    # Check if the database should be cleared (using the --reset flag).
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Reset the database.")
     args = parser.parse_args()
@@ -25,55 +26,79 @@ def main():
     # Create (or update) the data store.
     documents = load_documents()
     chunks = split_documents(documents)
-    add_to_chroma(chunks)
+    add_to_faiss(chunks)
 
 
 def load_documents():
-    document_loader = PyPDFDirectoryLoader(DATA_PATH)
-    return document_loader.load()
+    documents = []
+    pdf_files = glob.glob(os.path.join(DATA_PATH, "*.pdf"))
+    
+    if not pdf_files:
+        print(f"No PDF files found in {DATA_PATH} directory.")
+        return documents
+    
+    for pdf_file in pdf_files:
+        print(f"Loading {pdf_file}...")
+        loader = PyMuPDFLoader(pdf_file)
+        documents.extend(loader.load())
+    
+    print(f"Loaded {len(documents)} pages from {len(pdf_files)} PDF files.")
+    return documents
 
 
 def split_documents(documents: list[Document]):
+    # Use chunk sizes from techstack: 500 tokens with 50 overlap
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
-        chunk_overlap=80,
+        chunk_size=500,
+        chunk_overlap=50,
         length_function=len,
         is_separator_regex=False,
     )
-    return text_splitter.split_documents(documents)
+    chunks = text_splitter.split_documents(documents)
+    print(f"Split documents into {len(chunks)} chunks.")
+    return chunks
 
 
-def add_to_chroma(chunks: list[Document]):
-    # Load the existing database.
-    db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
-    )
+def add_to_faiss(chunks: list[Document]):
+    if not chunks:
+        print("No chunks to add to database.")
+        return
 
     # Calculate Page IDs.
     chunks_with_ids = calculate_chunk_ids(chunks)
 
-    # Add or Update the documents.
-    existing_items = db.get(include=[])  # IDs are always included by default
-    existing_ids = set(existing_items["ids"])
-    print(f"Number of existing documents in DB: {len(existing_ids)}")
+    # Get embedding function
+    embedding_function = get_embedding()
 
-    # Only add documents that don't exist in the DB.
-    new_chunks = []
-    for chunk in chunks_with_ids:
-        if chunk.metadata["id"] not in existing_ids:
-            new_chunks.append(chunk)
-
-    if len(new_chunks):
-        print(f"👉 Adding new documents: {len(new_chunks)}")
-        new_chunk_ids = [chunk.metadata["id"] for chunk in new_chunks]
-        db.add_documents(new_chunks, ids=new_chunk_ids)
-        db.persist()
+    # Check if FAISS index exists
+    if os.path.exists(FAISS_PATH):
+        print("Loading existing FAISS index...")
+        try:
+            db = FAISS.load_local(FAISS_PATH, embedding_function, allow_dangerous_deserialization=True)
+            
+            # Get existing IDs (FAISS doesn't have direct ID access, so we'll rebuild)
+            print("Adding new documents to existing index...")
+            
+            # Create new FAISS index from all chunks
+            new_db = FAISS.from_documents(chunks_with_ids, embedding_function)
+            
+            # Merge with existing database
+            db.merge_from(new_db)
+            
+        except Exception as e:
+            print(f"Error loading existing index: {e}")
+            print("Creating new FAISS index...")
+            db = FAISS.from_documents(chunks_with_ids, embedding_function)
     else:
-        print("✅ No new documents to add")
+        print("Creating new FAISS index...")
+        db = FAISS.from_documents(chunks_with_ids, embedding_function)
+
+    # Save the index
+    db.save_local(FAISS_PATH)
+    print(f"✅ Saved FAISS index with {len(chunks_with_ids)} chunks.")
 
 
 def calculate_chunk_ids(chunks):
-
     # This will create IDs like "data/monopoly.pdf:6:2"
     # Page Source : Page Number : Chunk Index
 
@@ -102,8 +127,9 @@ def calculate_chunk_ids(chunks):
 
 
 def clear_database():
-    if os.path.exists(CHROMA_PATH):
-        shutil.rmtree(CHROMA_PATH)
+    if os.path.exists(FAISS_PATH):
+        shutil.rmtree(FAISS_PATH)
+        print("Database cleared.")
 
 
 if __name__ == "__main__":

@@ -1,126 +1,176 @@
-# RAG Tutorial: Building a Retrieval-Augmented Generation System
+# Inquiro
+
+<div align="center">
+    <img src="https://via.placeholder.com/200x200.png?text=Inquiro" alt="Inquiro Logo" width="200"/>
+    <p><em>Knowledge at your fingertips through document-grounded AI</em></p>
+</div>
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## Overview
 
-This repository demonstrates a complete implementation of a Retrieval-Augmented Generation (RAG) system. RAG combines the power of large language models (LLMs) with information retrieval to generate more accurate, relevant, and factual responses based on specific document collections. Unlike traditional LLMs which rely solely on their pre-trained knowledge, RAG systems can access, retrieve, and utilize specific information from custom document collections.
+**Inquiro** is a powerful Retrieval-Augmented Generation (RAG) system that enhances Large Language Model (LLM) responses by grounding them in your own document collections. This approach dramatically improves factual accuracy, relevance, and traceability of information sources compared to traditional LLMs that rely solely on pre-trained knowledge.
 
-## Project Purpose
+By combining sophisticated document processing, high-performance vector search, and advanced prompt engineering, Inquiro delivers precise, contextually relevant answers to your questions with clear source attribution.
 
-This project serves as:
-- A working example of a RAG system using LangChain and ChromaDB
-- A demonstration of embedding generation and vector similarity search
-- A reference implementation for document chunking and processing
-- A tutorial on how to ground LLM responses in specific document sources
-- A template for building RAG-based applications
+## Key Features
 
-## How It Works
+- **✨ Document-Grounded Responses**: Bases answers on your specific document collection, not generic LLM knowledge
+- **🔍 Advanced Semantic Search**: Utilizes high-quality vector embeddings for accurate information retrieval
+- **📄 PDF Support**: Process and analyze PDF documents with clean text extraction
+- **🔗 Source Attribution**: Provides clear references to source documents for all information
+- **🚀 Local-First Architecture**: Runs entirely on your local machine with no data sent to external servers
+- **⚡ Ollama Integration**: Works with Llama 3 and other models via Ollama's efficient local runtime
 
-### System Architecture
-
-The RAG implementation in this repository consists of four main components:
-
-1. **Document Processing Pipeline**
-   - Loads PDFs from the `data/` directory
-   - Splits documents into manageable text chunks
-   - Maintains document metadata for source attribution
-
-2. **Vector Database**
-   - Converts text chunks into vector embeddings
-   - Stores embeddings in ChromaDB for efficient similarity search
-   - Implements deduplication and document versioning
-
-3. **Query Engine**
-   - Takes natural language questions as input
-   - Finds semantically similar document chunks
-   - Constructs context-rich prompts for the LLM
-
-4. **Response Generation**
-   - Processes prompts with relevant retrieved context
-   - Generates answers using an LLM (Mistral via Ollama)
-   - Returns answers with source attribution
-
-### Data Flow
+## System Architecture
 
 ```
 ┌───────────┐    ┌──────────────┐    ┌──────────────┐
 │  PDF Docs │───►│Text Chunking │───►│  Embedding   │
 └───────────┘    └──────────────┘    └──────────────┘
-                                            │
-                                            ▼
-                 ┌──────────────┐    ┌──────────────┐
-┌───────────┐    │    Query     │    │   ChromaDB   │
-│ User Query│───►│  Processing  │◄───│Vector Storage│
-└───────────┘    └──────────────┘    └──────────────┘
+                                        │
+                                        ▼
+┌───────────┐    ┌──────────────┐    ┌──────────────┐
+│ User Query│───►│    Query     │◄───│   FAISS DB   │
+└───────────┘    │  Processing  │    │Vector Storage│
+                 └──────────────┘    └──────────────┘
                         │
                         ▼
-                 ┌──────────────┐    ┌──────────────┐
-                 │Context-based │    │    LLM       │
-                 │   Prompt     │───►│  Response    │
-                 └──────────────┘    └──────────────┘
+                 ┌──────────────┐
+                 │  LLM-based   │
+                 │   Response   │
+                 └──────────────┘
 ```
 
-## File Structure
+Inquiro provides a robust pipeline for document processing, vector storage, and query handling:
 
-- **`populate_database.py`**: Handles document loading, splitting, and vector database management
-- **`query_data.py`**: Processes questions, retrieves relevant context, and generates responses
-- **`get_embedding_function.py`**: Provides embedding functions using Amazon Bedrock or Ollama
-- **`test_rag.py`**: Contains tests to evaluate the system's response accuracy
-- **`data/`**: Directory containing PDF documents used as knowledge sources
-- **`chroma/`**: Directory where the vector database is stored (created at runtime)
+1. **Document Processing**: PDF documents are loaded, split into optimal chunks, and assigned tracking IDs
+2. **Vector Storage**: Document chunks are transformed into embeddings and stored in a FAISS database
+3. **Query Engine**: Natural language questions are processed to find semantically similar document chunks
+4. **Response Generation**: A context-aware prompt combines retrieved information for accurate answers
 
-## Setup and Usage
+## Quick Start
 
 ### Prerequisites
 
-- Python 3.8+
-- Required packages (install with `pip install -r requirements.txt`)
-- AWS credentials configured for Amazon Bedrock (or Ollama installed locally)
-- PDF documents in the `data/` directory
+- Python 3.8 or higher
+- [Ollama](https://ollama.ai) installed locally
+- PDF documents you want to query
 
 ### Installation
 
-1. Clone this repository
-   ```bash
-   git clone https://github.com/yourusername/rag-tutorial-v2.git
-   cd rag-tutorial-v2
-   ```
-
-2. Install dependencies
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Configure your embedding provider
-   - For Amazon Bedrock: ensure AWS credentials are set up
-   - For Ollama: uncomment the Ollama embeddings line in `get_embedding_function.py`
-
-### Building the Knowledge Base
-
-To process documents and build the vector database:
-
 ```bash
-python populate_database.py
+# Clone the repository
+git clone https://github.com/yourusername/inquiro.git
+cd inquiro
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install required Ollama models
+ollama pull llama3:8b
+ollama pull nomic-embed-text
+
+# Verify setup
+python setup_local.py
 ```
 
-To reset the database and rebuild it from scratch:
+### Usage
 
-```bash
-python populate_database.py --reset
+1. **Add your documents**
+   ```
+   mkdir -p data
+   # Copy your PDF files to the data/ directory
+   ```
+
+2. **Build the knowledge base**
+   ```
+   python populate_database.py
+   ```
+
+3. **Query using the research assistant**
+   ```
+   python research_assistant.py
+   ```
+
+For detailed instructions, see [QUICKSTART.md](QUICKSTART.md).
+
+## Use Cases
+
+Inquiro is ideal for:
+
+- **Research Assistance**: Analyze and query research papers or technical documents
+- **Knowledge Management**: Create searchable repositories of organizational knowledge
+- **Education**: Build customized learning tools based on specific curricula
+- **Documentation Search**: Make technical documentation easily queryable
+
+## Documentation
+
+- [Quick Start Guide](QUICKSTART.md) - Get up and running quickly
+- [Technical Documentation](DOCUMENTATION.md) - Detailed technical reference
+- [Technical Stack](TECHSTACK.md) - Component choices and architecture decisions
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+### Using the Research Assistant
+
+The system provides an interactive research assistant interface:
+
+```powershell
+python research_assistant.py
 ```
 
-### Querying the System
+This launches an interactive CLI where you can ask multiple questions in sequence.
 
-To ask questions about documents in your knowledge base:
+For single queries, use:
 
-```bash
-python query_data.py "What is the starting money in Monopoly?"
+```powershell
+python query_data.py "Your question here"
+```
+
+### Running Tests
+
+To validate system functionality:
+
+```powershell
+pytest test_rag.py -v
+```
+
+## Handling Deprecation Warnings
+
+If you see deprecation warnings related to LangChain Ollama components, update your dependencies:
+
+```powershell
+pip install langchain-ollama
+```
+
+This will install the updated packages that resolve warnings about `OllamaEmbeddings` and `Ollama` classes that will be removed in future LangChain versions.
+```
+
+### Usage
+
+#### Interactive Mode (Recommended)
+```powershell
+python research_assistant.py
+```
+
+#### Single Question Mode
+```powershell
+python research_assistant.py "What is the main topic of the document?"
+```
+
+#### Direct Query (Advanced)
+```powershell
+python query_data.py "Your question here"
 ```
 
 ### Running Tests
 
 To evaluate the system's accuracy:
 
-```bash
+```powershell
 pytest test_rag.py -v
 ```
 
@@ -128,43 +178,11 @@ pytest test_rag.py -v
 
 - **Embedding Models**: Edit `get_embedding_function.py` to change the embedding provider
 - **Document Types**: Extend `populate_database.py` to support additional document formats
-- **Chunking Strategy**: Modify the chunking parameters in `split_documents()` function
-- **Prompt Template**: Customize the prompt template in `query_data.py` for different response styles
 
-## Technical Details
+## Troubleshooting
 
-### Document Chunking
+- **Database Issues**: Rebuild the database with `python populate_database.py --reset`
+- **Embedding Errors**: Verify your Ollama installation and model availability
+- **Missing Dependencies**: Run `pip install -r requirements.txt` again
 
-Documents are split into chunks of 800 characters with 80-character overlaps. This balances context retention with embedding efficiency.
-
-### Chunk Identification
-
-Each chunk gets a unique identifier in the format:
-```
-source_path:page_number:chunk_index
-```
-This allows for source attribution and tracing responses back to specific document sections.
-
-### Similarity Search
-
-When querying, the system retrieves the top 5 most semantically similar chunks using vector similarity search.
-
-### Context Assembly
-
-Retrieved chunks are concatenated to form a comprehensive context, which is included in the prompt to the LLM.
-
-## Future Improvements
-
-- Support for more document types (Word, HTML, Markdown, etc.)
-- Implementation of hybrid search (combining vector and keyword search)
-- Integration of document metadata filtering
-- User interface for easier interaction
-
-## License
-
-[License information here]
-
-## Acknowledgments
-
-- LangChain for providing the RAG framework
-- ChromaDB for vector storage capabilities
+For more detailed technical information, see `DOCUMENTATION.md`.

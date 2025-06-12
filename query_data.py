@@ -1,11 +1,17 @@
+
 import argparse
-from langchain.vectorstores.chroma import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain.prompts import ChatPromptTemplate
-from langchain_community.llms.ollama import Ollama
+# Import from the new langchain-ollama package to address deprecation warning
+try:
+    from langchain_ollama import OllamaLLM as Ollama
+except ImportError:
+    # Fallback to community version if langchain-ollama is not installed
+    from langchain_community.llms.ollama import Ollama
 
-from get_embedding_function import get_embedding_function
+from get_embedding import get_embedding
 
-CHROMA_PATH = "chroma"
+FAISS_PATH = "faiss_index"
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -29,8 +35,14 @@ def main():
 
 def query_rag(query_text: str):
     # Prepare the DB.
-    embedding_function = get_embedding_function()
-    db = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
+    embedding_function = get_embedding()
+    
+    try:
+        db = FAISS.load_local(FAISS_PATH, embedding_function, allow_dangerous_deserialization=True)
+    except Exception as e:
+        print(f"Error loading FAISS index: {e}")
+        print("Please run populate_database.py first to create the vector database.")
+        return
 
     # Search the DB.
     results = db.similarity_search_with_score(query_text, k=5)
@@ -38,9 +50,9 @@ def query_rag(query_text: str):
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
-    # print(prompt)
 
-    model = Ollama(model="mistral")
+    # Use llama3:8b as specified in techstack
+    model = Ollama(model="llama3:8b")
     response_text = model.invoke(prompt)
 
     sources = [doc.metadata.get("id", None) for doc, _score in results]

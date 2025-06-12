@@ -1,4 +1,12 @@
+# Ignore Python bytecode files
 *.pyc
+__pycache__/
+
+# System files
 .DS_Store
-backup
-chroma
+
+# Directories to ignore completely
+backup/
+chroma/
+venv/
+faiss_index/

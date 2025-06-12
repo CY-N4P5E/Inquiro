@@ -1,19 +1,18 @@
+
 # Core dependencies
 langchain>=0.1.0
 langchain-community>=0.0.10
 langchain-text-splitters>=0.0.1
-chromadb>=0.4.18  # Vector storage
+langchain-ollama>=0.0.1
 
-# Document processing
-pypdf>=3.15.1
+# Vector storage (FAISS for local use)
+faiss-cpu>=1.7.4
+
+# Document processing (PyMuPDF for better PDF handling)
+pymupdf>=1.23.0
+
+# Local model support (Ollama)
+# Note: Ollama needs to be installed separately from https://ollama.ai
 
 # Testing
 pytest>=7.4.0
-
-# AWS Integration
-boto3>=1.28.0
-botocore>=1.31.0
-
-# Local model support (for Ollama)
-# Uncomment if using Ollama locally
-# ollama>=0.1.0
