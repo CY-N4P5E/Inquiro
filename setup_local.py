@@ -8,6 +8,7 @@ This script helps verify that all required components are available.
 import subprocess
 import sys
 import os
+from config import DATA_PATH, FAISS_PATH
 
 
 def check_ollama():
@@ -46,18 +47,18 @@ def check_ollama():
 
 def check_data_directory():
     """Check if data directory exists and has PDF files."""
-    if not os.path.exists('data'):
+    if not os.path.exists(DATA_PATH):
         print("❌ Data directory not found")
         print("Creating data directory...")
-        os.makedirs('data')
+        os.makedirs(DATA_PATH)
         print("✅ Data directory created")
-        print("Please add PDF files to the data/ directory")
+        print(f"Please add PDF files to the {DATA_PATH} directory")
         return False
     
-    pdf_files = [f for f in os.listdir('data') if f.endswith('.pdf')]
+    pdf_files = [f for f in os.listdir(DATA_PATH) if f.endswith('.pdf')]
     if not pdf_files:
         print("❌ No PDF files found in data directory")
-        print("Please add PDF files to the data/ directory")
+        print(f"Please add PDF files to the {DATA_PATH} directory")
         return False
     
     print(f"✅ Found {len(pdf_files)} PDF files in data directory")

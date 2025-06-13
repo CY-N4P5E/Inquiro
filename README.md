@@ -21,6 +21,7 @@ By combining sophisticated document processing, high-performance vector search, 
 - **🔗 Source Attribution**: Provides clear references to source documents for all information
 - **🚀 Local-First Architecture**: Runs entirely on your local machine with no data sent to external servers
 - **⚡ Ollama Integration**: Works with Llama 3 and other models via Ollama's efficient local runtime
+- **📂 Centralized Storage**: All data stored in `C:\inquiro` for easy management and backup
 
 ## System Architecture
 
@@ -79,8 +80,9 @@ python setup_local.py
 
 1. **Add your documents**
    ```
-   mkdir -p data
-   # Copy your PDF files to the data/ directory
+   # Documents are now stored in C:\inquiro\data
+   # The system will automatically create this directory
+   # Copy your PDF files to C:\inquiro\data\
    ```
 
 2. **Build the knowledge base**

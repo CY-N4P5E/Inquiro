@@ -8,10 +8,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from get_embedding import get_embedding
 from langchain_community.vectorstores import FAISS
-
-
-FAISS_PATH = "faiss_index"
-DATA_PATH = "data"
+from config import FAISS_PATH, DATA_PATH
 
 
 def main():

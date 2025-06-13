@@ -10,8 +10,7 @@ except ImportError:
     from langchain_community.llms.ollama import Ollama
 
 from get_embedding import get_embedding
-
-FAISS_PATH = "faiss_index"
+from config import FAISS_PATH
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
@@ -51,7 +50,7 @@ def query_rag(query_text: str):
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
 
-    # Use llama3:8b as specified in techstack
+    # Use llama3:8b 
     model = Ollama(model="llama3:8b")
     response_text = model.invoke(prompt)
 

@@ -9,4 +9,9 @@ __pycache__/
 backup/
 chroma/
 venv/
+
+# Local development directories (legacy - now using C:\inquiro)
+data/
 faiss_index/
+
+# Note: Data is now stored in C:\inquiro which is outside this repository
