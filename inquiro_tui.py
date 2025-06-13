@@ -161,7 +161,8 @@ class ChatZone(Vertical):
         
         input_widget.value = ""
         self.add_user_message(msg)
-          # Check if database exists
+        
+        # Check if database exists
         if not os.path.exists(FAISS_PATH):
             self.add_error_message("No database found. Please populate the database first.")
             return
@@ -203,7 +204,8 @@ class ContextManagerZone(Vertical):
         yield Static("Database Status:", classes="label")
         self.status_display = Static("", id="db-status")
         yield self.status_display
-          # File list
+        
+        # File list
         yield Static("Documents:", classes="label")
         self.file_list = Static("", classes="file-list", id="file-display")
         yield ScrollableContainer(self.file_list, id="file-scroll")
@@ -215,7 +217,9 @@ class ContextManagerZone(Vertical):
             Button("🔄 Populate Database", id="populate-db", variant="primary"),
             Button("🗑️ Clear Database", id="clear-db", variant="error"),
             classes="button-group"
-        )    def refresh_file_list(self):
+        )
+
+    def refresh_file_list(self):
         """Update the file list from the data directory."""
         if os.path.exists(DATA_PATH):
             all_files = os.listdir(DATA_PATH)
@@ -232,7 +236,7 @@ class ContextManagerZone(Vertical):
 
     def update_database_status(self):
         """Check and update database status."""
-        if os.path.exists("faiss_index") and os.path.exists("faiss_index/index.faiss"):
+        if os.path.exists(FAISS_PATH) and os.path.exists(os.path.join(FAISS_PATH, 'index.faiss')):
             self.database_status = "✅ Ready"
             status_text = "[green]✅ Database Ready[/green]"
         else:
@@ -291,7 +295,9 @@ class ContextManagerZone(Vertical):
                     f"Clear failed: {str(e)}"
                 )
         
-        threading.Thread(target=run_clear, daemon=True).start()    @on(Button.Pressed, "#manage-files")
+        threading.Thread(target=run_clear, daemon=True).start()
+
+    @on(Button.Pressed, "#manage-files")
     def manage_files_action(self):
         """Open file management dialog."""
         self.app.push_screen(FileManagerScreen())
@@ -362,7 +368,7 @@ if ($dialog.ShowDialog() -eq "OK") {
     def copy_files_to_data(self, file_paths):
         """Copy selected files to the data directory."""
         chat = self.app.query_one(ChatZone)
-        data_dir = os.path.join(os.getcwd(), "data")
+        data_dir = DATA_PATH
         
         # Ensure data directory exists
         os.makedirs(data_dir, exist_ok=True)
@@ -421,7 +427,7 @@ if ($dialog.ShowDialog() -eq "OK") {
     def remove_files(self, filenames):
         """Remove selected files from the data directory."""
         chat = self.app.query_one(ChatZone)
-        data_dir = os.path.join(os.getcwd(), "data")
+        data_dir = DATA_PATH
         
         successful = 0
         failed = 0
@@ -518,7 +524,8 @@ class InquiroTUI(App):
     .button-group {
         margin-top: 1;
     }
-      .button-group Button {
+    
+    .button-group Button {
         width: 100%;
         margin-bottom: 1;
     }
