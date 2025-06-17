@@ -12,12 +12,12 @@ import sys
 from datetime import datetime
 import threading
 import shutil
-from config import FAISS_PATH, DATA_PATH
+from core.config import FAISS_PATH, DATA_PATH
 
 # Import our backend functions
 try:
-    from query_data import query_rag
-    from populate_database import main as populate_main, clear_database
+    from core.query_data import query_rag
+    from core.populate_database import main as populate_main, clear_database
 except ImportError as e:
     print(f"Warning: Could not import backend functions: {e}")
     query_rag = None
@@ -37,18 +37,24 @@ class FileManagerScreen(ModalScreen):
                 Button("❌ Cancel", id="cancel-btn", variant="default"),
                 classes="dialog-buttons"
             )
-
+            
     @on(Button.Pressed, "#add-files-btn")
     def add_files_action(self):
         """Open Windows file explorer to select files."""
         self.dismiss()
-        self.app.query_one(ContextManagerZone).open_file_explorer()
+        context_zone = self.app.query_one(ContextManagerZone)
+        chat = self.app.query_one(ChatZone)
+        chat.add_system_message("📁 Attempting to open file explorer...")
+        context_zone.open_file_explorer()
 
     @on(Button.Pressed, "#add-path-btn") 
     def add_path_action(self):
         """Show input for manual path entry."""
         self.dismiss()
-        self.app.query_one(ContextManagerZone).show_path_input()
+        context_zone = self.app.query_one(ContextManagerZone)
+        chat = self.app.query_one(ChatZone)
+        chat.add_system_message("📝 Opening path input dialog...")
+        context_zone.show_path_input()
 
     @on(Button.Pressed, "#remove-files-btn")
     def remove_files_action(self):
@@ -216,6 +222,7 @@ class ContextManagerZone(Vertical):
             Button("📂 Manage Files", id="manage-files", variant="success"),
             Button("🔄 Populate Database", id="populate-db", variant="primary"),
             Button("🗑️ Clear Database", id="clear-db", variant="error"),
+            Button("🧪 Test File Mgmt", id="test-files", variant="warning"),
             classes="button-group"
         )
 
@@ -296,23 +303,26 @@ class ContextManagerZone(Vertical):
                 )
         
         threading.Thread(target=run_clear, daemon=True).start()
-
+        
     @on(Button.Pressed, "#manage-files")
     def manage_files_action(self):
         """Open file management dialog."""
         self.app.push_screen(FileManagerScreen())
+        
+    @on(Button.Pressed, "#test-files")
+    def test_files_action(self):
+        """Run file management tests."""
+        self.add_test_files()
 
     def open_file_explorer(self):
         """Open Windows file explorer to select files."""
-        try:
-            # Use PowerShell to open file dialog for Windows
-            chat = self.app.query_one(ChatZone)
-            chat.add_system_message("🔍 Opening file explorer...")
-            
-            def run_file_dialog():
-                try:
-                    # PowerShell script to open file dialog
-                    ps_script = '''
+        chat = self.app.query_one(ChatZone)
+        chat.add_system_message("🔍 Opening file explorer...")
+        
+        def run_file_dialog():
+            try:
+                # Try PowerShell approach first
+                ps_script = '''
 Add-Type -AssemblyName System.Windows.Forms;
 $dialog = New-Object System.Windows.Forms.OpenFileDialog;
 $dialog.Filter = "Document files (*.pdf;*.txt;*.md)|*.pdf;*.txt;*.md|All files (*.*)|*.*";
@@ -322,46 +332,59 @@ if ($dialog.ShowDialog() -eq "OK") {
     $dialog.FileNames
 }
 '''
-                    result = subprocess.run(
-                        ["powershell", "-Command", ps_script],
-                        capture_output=True,
-                        text=True,
-                        creationflags=subprocess.CREATE_NO_WINDOW
-                    )
-                    
-                    if result.returncode == 0 and result.stdout.strip():
-                        files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
-                        if files:
-                            self.call_from_thread(self.copy_files_to_data, files)
-                        else:
-                            self.call_from_thread(chat.add_system_message, "No files selected")
+                result = subprocess.run(
+                    ["powershell", "-Command", ps_script],
+                    capture_output=True,
+                    text=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+                # Debug output for troubleshooting
+                chat.add_system_message(f"[DEBUG] File dialog return code: {result.returncode}")
+                chat.add_system_message(f"[DEBUG] File dialog stdout: {result.stdout}")
+                chat.add_system_message(f"[DEBUG] File dialog stderr: {result.stderr}")
+                if result.returncode == 0 and result.stdout.strip():
+                    files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
+                    if files:
+                        self.call_from_thread(self.copy_files_to_data, files)
                     else:
-                        self.call_from_thread(chat.add_system_message, "File selection cancelled")
-                except Exception as e:
-                    self.call_from_thread(chat.add_error_message, f"File explorer error: {str(e)}")
-            
-            threading.Thread(target=run_file_dialog, daemon=True).start()
-            
-        except Exception as e:
-            self.app.query_one(ChatZone).add_error_message(f"Could not open file explorer: {str(e)}")
+                        self.call_from_thread(chat.add_system_message, "No files selected")
+                else:
+                    # Fallback: suggest manual path entry
+                    self.call_from_thread(chat.add_error_message, f"File dialog failed. Use 'Add Files by Path' instead. STDERR: {result.stderr}")
+            except Exception as e:
+                self.call_from_thread(chat.add_error_message, f"File explorer error: {str(e)}. Use 'Add Files by Path' instead.")
+        
+        threading.Thread(target=run_file_dialog, daemon=True).start()
 
     def show_path_input(self):
         """Show input dialog for manual path entry."""
+        chat = self.app.query_one(ChatZone)
+        chat.add_system_message("💬 Enter file path in the dialog that appears...")
+        
         def handle_path_result(path):
-            if path:
-                self.add_file_by_path(path)
+            if path and path.strip():
+                chat.add_system_message(f"📝 Processing path: {path}")
+                self.add_file_by_path(path.strip())
+            else:
+                chat.add_system_message("❌ No path provided")
         
         self.app.push_screen(PathInputScreen(), handle_path_result)
 
     def show_file_removal(self):
         """Show file selection dialog for removal."""
+        chat = self.app.query_one(ChatZone)
         if not self.files:
-            self.app.query_one(ChatZone).add_error_message("No files to remove")
+            chat.add_error_message("❌ No files to remove")
             return
             
+        chat.add_system_message("🗑️ Opening file removal dialog...")
+        
         def handle_removal_result(selected_files):
             if selected_files:
+                chat.add_system_message(f"🗑️ Removing {len(selected_files)} files...")
                 self.remove_files(selected_files)
+            else:
+                chat.add_system_message("❌ No files selected for removal")
         
         self.app.push_screen(FileRemovalScreen(self.files), handle_removal_result)
 
@@ -369,24 +392,27 @@ if ($dialog.ShowDialog() -eq "OK") {
         """Copy selected files to the data directory."""
         chat = self.app.query_one(ChatZone)
         data_dir = DATA_PATH
-        
+        chat.add_system_message(f"[DEBUG] copy_files_to_data called with: {file_paths}")
+        chat.add_system_message(f"📁 Processing {len(file_paths)} file(s)...")
         # Ensure data directory exists
         os.makedirs(data_dir, exist_ok=True)
-        
         successful = 0
         failed = 0
-        
         for file_path in file_paths:
             try:
+                chat.add_system_message(f"[DEBUG] Processing file: {file_path}")
                 if os.path.exists(file_path):
                     filename = os.path.basename(file_path)
                     destination = os.path.join(data_dir, filename)
-                    
                     # Check if file already exists
                     if os.path.exists(destination):
                         chat.add_system_message(f"⚠️ File already exists: {filename}")
                         continue
-                    
+                    # Validate file type
+                    if not filename.lower().endswith(('.pdf', '.txt', '.md')):
+                        chat.add_error_message(f"❌ Unsupported file type: {filename}")
+                        failed += 1
+                        continue
                     # Copy the file
                     shutil.copy2(file_path, destination)
                     chat.add_system_message(f"✅ Added: {filename}")
@@ -397,13 +423,14 @@ if ($dialog.ShowDialog() -eq "OK") {
             except Exception as e:
                 chat.add_error_message(f"❌ Failed to copy {os.path.basename(file_path)}: {str(e)}")
                 failed += 1
-        
         # Update file list and show summary
         self.refresh_file_list()
+        chat.add_system_message(f"[DEBUG] copy_files_to_data finished. Successful: {successful}, Failed: {failed}")
         if successful > 0:
-            chat.add_system_message(f"📁 Added {successful} file(s) successfully")
+            chat.add_system_message(f"🎉 Successfully added {successful} file(s)!")
+            chat.add_system_message("💡 Remember to rebuild the database to include new files")
         if failed > 0:
-            chat.add_error_message(f"Failed to add {failed} file(s)")
+            chat.add_error_message(f"❌ Failed to add {failed} file(s)")
 
     def add_file_by_path(self, file_path):
         """Add a single file by path."""
@@ -455,6 +482,33 @@ if ($dialog.ShowDialog() -eq "OK") {
                 chat.add_system_message("💡 Consider rebuilding the database after removing files")
         if failed > 0:
             chat.add_error_message(f"Failed to remove {failed} file(s)")
+
+    def add_test_files(self):
+        """Add some test functionality to verify file management works."""
+        chat = self.app.query_one(ChatZone)
+        chat.add_system_message("🧪 Testing file management functionality...")
+        
+        # Test 1: Check if data directory exists
+        if os.path.exists(DATA_PATH):
+            chat.add_system_message(f"✅ Data directory found: {DATA_PATH}")
+        else:
+            chat.add_system_message(f"⚠️ Creating data directory: {DATA_PATH}")
+            try:
+                os.makedirs(DATA_PATH, exist_ok=True)
+                chat.add_system_message("✅ Data directory created successfully")
+            except Exception as e:
+                chat.add_error_message(f"❌ Failed to create data directory: {e}")
+                return
+        
+        # Test 2: List current files
+        try:
+            files = os.listdir(DATA_PATH)
+            pdf_files = [f for f in files if f.endswith('.pdf')]
+            chat.add_system_message(f"📄 Found {len(pdf_files)} PDF files in data directory")
+            for pdf in pdf_files[:3]:  # Show first 3
+                chat.add_system_message(f"  • {pdf}")
+        except Exception as e:
+            chat.add_error_message(f"❌ Error listing files: {e}")
 
 class InquiroTUI(App):
     """Professional TUI for the Inquiro Research Assistant."""
@@ -606,6 +660,16 @@ class InquiroTUI(App):
         context_zone.refresh_file_list()
         context_zone.update_database_status()
         self.query_one(ChatZone).add_system_message("Interface refreshed")
+
+    # @on(Button.Pressed)
+    # def debug_button_press(self, event: Button.Pressed) -> None:
+    #     # Add a system message for any button press in the app
+    #     try:
+    #         chat = self.query_one(ChatZone)
+    #         chat.add_system_message(f"[DEBUG] Button pressed: {event.button.id}")
+    #     except Exception as e:
+    #         print(f"[DEBUG] Button pressed: {getattr(event.button, 'id', None)} (ChatZone not found: {e})")
+
 
 if __name__ == "__main__":
     app = InquiroTUI()

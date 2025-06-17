@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inquiro"
+version = "0.2.0"
+description = "AI-Powered Document Research Assistant - Transform your documents into an intelligent knowledge base with local RAG technology"
+authors = [
+    {name = "Inquiro Team", email = "contact@inquiro.dev"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.8"
+keywords = ["rag", "ai", "document-analysis", "research", "llm", "embeddings"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Researchers",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Indexing",
+]
+
+dependencies = [
+    "langchain>=0.1.0",
+    "langchain-community>=0.0.10", 
+    "langchain-text-splitters>=0.0.1",
+    "langchain-ollama>=0.0.1",
+    "textual>=0.41.0",
+    "faiss-cpu>=1.7.4",
+    "pymupdf>=1.23.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.0.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/inquiro"
+Documentation = "https://github.com/yourusername/inquiro/wiki"
+Repository = "https://github.com/yourusername/inquiro.git"
+"Bug Reports" = "https://github.com/yourusername/inquiro/issues"
+
+[project.scripts]
+inquiro = "inquiro.ui.inquiro_cli:main"
+inquiro-tui = "inquiro.ui.inquiro_tui:main"
+inquiro-setup = "inquiro.ui.setup_local:main"
+
+[tool.setuptools.packages.find]
+include = ["inquiro*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | __pycache__
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

@@ -9,8 +9,8 @@ import sys
 import time
 from datetime import datetime
 from typing import Optional, List
-from query_data import query_rag
-from config import FAISS_PATH, DATA_PATH
+from core.query_data import query_rag
+from core.config import FAISS_PATH, DATA_PATH
 
 
 # Color codes for beautiful terminal output

@@ -1,4 +1,4 @@
-from query_data import query_rag
+from core.query_data import query_rag
 # Import from the new langchain-ollama package to address deprecation warning
 try:
     from langchain_ollama import OllamaLLM as Ollama
