@@ -27,9 +27,9 @@ __license__ = "MIT"
 
 # Import key functions for convenience
 try:
-    from .core.query_data import query_documents
-    from .core.populate_database import build_knowledge_base
-    from .core.config import DATA_PATH, FAISS_PATH
+    from core.query_data import query_documents
+    from core.populate_database import build_knowledge_base
+    from core.config import DATA_PATH, FAISS_PATH
     
     __all__ = [
         "query_documents",

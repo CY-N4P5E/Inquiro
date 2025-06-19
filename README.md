@@ -73,7 +73,7 @@ graph TD
 
 - **Python 3.8+** (Python 3.10+ recommended)
 - **8GB+ RAM** (for optimal performance)
-- **Ollama** installed and running ([Download here](https://ollama.ai))
+- **Ollama** installed and running
 
 ### 1. Installation
 
@@ -88,9 +88,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Or for development
-pip install -e .[dev]
 ```
 
 ### 2. Setup Ollama Models
@@ -116,11 +113,6 @@ mkdir data
 
 # Build the knowledge base
 python core/populate_database.py
-
-# Alternative: Use Make for streamlined workflow
-make setup-ollama        # Install Ollama models
-make populate-db         # Build knowledge base
-make check-setup         # Verify installation
 ```
 
 ### 4. Start Querying
@@ -140,21 +132,6 @@ python ui/inquiro_tui.py
 #### Direct Query
 ```bash
 python core/query_data.py "What are the main findings in the research papers?"
-
-# Or use the Make shortcut
-make query
-```
-
-## 📦 Alternative Installation
-
-### Using pip (when published)
-```bash
-pip install inquiro
-
-# Then use command-line tools
-inquiro                    # CLI interface
-inquiro-tui               # TUI interface  
-inquiro-setup             # Setup verification
 ```
 
 ## 💡 Usage Examples
@@ -242,13 +219,6 @@ python -m pytest tests/
 
 # Run specific tests
 python -m pytest tests/test_rag.py -v
-
-# Run with coverage
-pytest --cov=inquiro --cov-report=html
-
-# Or use Make
-make test              # Run tests
-make test-cov          # Run with coverage
 ```
 
 ## 🛠️ Development
@@ -259,37 +229,12 @@ make test-cov          # Run with coverage
 # Install development dependencies
 pip install -r requirements-dev.txt
 
-# Or install with optional dev dependencies
-pip install -e .[dev]
-
-# Setup pre-commit hooks
+# Install pre-commit hooks
 pre-commit install
 
-# Run linting and formatting
-make lint              # Check code quality
-make format            # Format code
-make check             # Run all pre-commit hooks
-
-# Alternative manual commands
-black .                # Format code
-flake8 .              # Lint code
-mypy inquiro/         # Type checking
-```
-
-### Development Workflow
-
-```bash
-# Setup everything for development
-make setup
-
-# Run tests in watch mode
-make test-watch
-
-# Clean build artifacts
-make clean
-
-# Build distribution packages
-make build
+# Run linting
+black .
+flake8 .
 ```
 
 ### Contributing
