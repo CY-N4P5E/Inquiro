@@ -59,9 +59,9 @@ import glob
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
-from core.get_embedding import get_embedding
 from langchain_community.vectorstores import FAISS
 
+from core.get_embedding import get_embedding
 from core.config import DATA_PATH, FAISS_PATH
 from core.config import CHUNK_SIZE, CHUNK_OVERLAP
 
