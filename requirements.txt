@@ -10,8 +10,10 @@ textual>=0.41.0
 # Vector storage (FAISS for local use)
 faiss-cpu>=1.7.4
 
-# Document processing (PyMuPDF for better PDF handling)
+# Document processing (PyMuPDF for PDF and Unstructured for DOCX handling)
 pymupdf>=1.23.0
+unstructured>=0.10.0
+python-docx>=0.8.11
 
 # Local model support (Ollama)
 # Note: Ollama needs to be installed separately from https://ollama.ai

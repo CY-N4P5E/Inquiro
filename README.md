@@ -45,7 +45,7 @@ Unlike generic AI assistants, Inquiro grounds every response in your specific do
 
 ```mermaid
 graph TD
-    A[📄 PDF Documents] --> B[🔄 Document Loader]
+    A[📄 PDF & DOCX Documents] --> B[🔄 Document Loader]
     B --> C[✂️ Text Chunking]
     C --> D[🧠 Embedding Generation]
     D --> E[🗄️ FAISS Vector Store]
@@ -61,7 +61,7 @@ graph TD
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| **Document Processing** | PyMuPDF | High-fidelity PDF text extraction |
+| **Document Processing** | PyMuPDF & Unstructured | High-fidelity PDF and DOCX text extraction |
 | **Text Chunking** | LangChain RecursiveCharacterTextSplitter | Semantic-aware text segmentation |
 | **Embeddings** | Nomic Embed Text | High-quality vector representations |
 | **Vector Database** | FAISS | Efficient similarity search |
@@ -109,7 +109,7 @@ python ui/setup_local.py
 
 # Add your documents to the data directory
 mkdir data
-# Copy your PDF files to ./data/
+# Copy your PDF and DOCX files to ./data/
 
 # Build the knowledge base
 python core/populate_database.py

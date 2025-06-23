@@ -1,13 +1,13 @@
 """
 populate_database.py
 -------------------
-This module loads PDF documents from the data directory, splits them into text chunks, 
+This module loads PDF and DOCX documents from the data directory, splits them into text chunks, 
 generates embeddings, and stores them in a FAISS vector database for efficient retrieval. 
 It provides modular reset/update functionality for database management.
 
 Features:
 - Intelligent database reset/update logic with user interaction
-- PDF document loading with PyMuPDF integration
+- PDF and DOCX document loading with PyMuPDF and Unstructured integration
 - Configurable text chunking with overlap
 - FAISS vector store creation and merging
 - Unique chunk ID generation for traceability
@@ -15,7 +15,7 @@ Features:
 - Modular command-line interface
 
 Dependencies:
-- langchain_community: For PDF loading and FAISS integration
+- langchain_community: For PDF and DOCX loading and FAISS integration
 - langchain_text_splitters: For document chunking
 - core.get_embedding: For embedding generation
 - core.config: For centralized configuration
@@ -34,7 +34,7 @@ Functions:
     main(): Entry point with modular reset behavior and user interaction
     determine_reset_behavior(): Handles flag logic and user prompts
     prompt_user_for_reset(): Interactive user input for database operation
-    load_documents(): Loads PDF files from configured data directory
+    load_documents(): Loads PDF and DOCX files from configured data directory
     split_documents(): Splits documents using configurable chunking parameters
     add_to_faiss(): Creates or updates FAISS vector store with embeddings
     calculate_chunk_ids(): Generates unique identifiers for document chunks
@@ -42,7 +42,7 @@ Functions:
 
 Configuration:
     All configuration imported from core.config:
-    - DATA_PATH: Directory containing PDF documents
+    - DATA_PATH: Directory containing PDF and DOCX documents
     - FAISS_PATH: Vector database storage location
     - CHUNK_SIZE: Size of text chunks for processing
     - CHUNK_OVERLAP: Overlap between consecutive chunks
@@ -57,6 +57,11 @@ from pathlib import Path
 import shutil
 import glob
 from langchain_community.document_loaders import PyMuPDFLoader
+try:
+    from langchain_community.document_loaders import UnstructuredWordDocumentLoader
+except ImportError:
+    # Fallback for older versions or missing unstructured dependency
+    UnstructuredWordDocumentLoader = None
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
 from langchain_community.vectorstores import FAISS
@@ -75,7 +80,7 @@ def main():
     - If --no-reset flag is provided, explicitly updates without resetting
     - If no flag is provided, prompts user for their preference
     """
-    parser = argparse.ArgumentParser(description="Populate the FAISS vector database with PDF documents.")
+    parser = argparse.ArgumentParser(description="Populate the FAISS vector database with PDF and DOCX documents.")
     parser.add_argument("--reset", action="store_true", help="Reset the database before adding documents.")
     parser.add_argument("--no-reset", action="store_true", help="Update the database without resetting.")
     args = parser.parse_args()
@@ -147,23 +152,43 @@ def prompt_user_for_reset():
 
 def load_documents():
     """
-    Loads all PDF files from the data directory specified by DATA_PATH.
-    Uses PyMuPDFLoader to extract pages from each PDF as Document objects.
-    Returns a list of Document objects (pages).
+    Loads all PDF and DOCX files from the data directory specified by DATA_PATH.
+    Uses PyMuPDFLoader for PDF files and UnstructuredWordDocumentLoader for DOCX files
+    to extract content as Document objects.
+    Returns a list of Document objects (pages/sections).
     """
     documents = []
     pdf_files = glob.glob(os.path.join(DATA_PATH, "*.pdf"))
+    docx_files = glob.glob(os.path.join(DATA_PATH, "*.docx"))
     
-    if not pdf_files:
-        print(f"No PDF files found in {DATA_PATH} directory.")
+    if not pdf_files and not docx_files:
+        print(f"No PDF or DOCX files found in {DATA_PATH} directory.")
         return documents
     
+    # Load PDF files
     for pdf_file in pdf_files:
-        print(f"Loading {pdf_file}...")
-        loader = PyMuPDFLoader(pdf_file)
-        documents.extend(loader.load())
+        print(f"Loading PDF: {pdf_file}...")
+        try:
+            loader = PyMuPDFLoader(pdf_file)
+            documents.extend(loader.load())
+        except Exception as e:
+            print(f"Error loading PDF {pdf_file}: {e}")
     
-    print(f"Loaded {len(documents)} pages from {len(pdf_files)} PDF files.")
+    # Load DOCX files
+    if UnstructuredWordDocumentLoader is None:
+        if docx_files:
+            print("Warning: UnstructuredWordDocumentLoader not available. Install 'unstructured' package for DOCX support.")
+            print("Run: pip install unstructured")
+    else:
+        for docx_file in docx_files:
+            print(f"Loading DOCX: {docx_file}...")
+            try:
+                loader = UnstructuredWordDocumentLoader(docx_file)
+                documents.extend(loader.load())
+            except Exception as e:
+                print(f"Error loading DOCX {docx_file}: {e}")
+    
+    print(f"Loaded {len(documents)} pages/sections from {len(pdf_files)} PDF files and {len(docx_files)} DOCX files.")
     return documents
 
 
