@@ -32,6 +32,7 @@ Environment Variables (all optional):
 - DEFAULT_K: Override retrieval count
 - DEFAULT_SCORE_THRESHOLD: Override similarity threshold
 - DEFAULT_MAX_CONTEXT_LENGTH: Override max context length
+- DEFAULT_MEMORY_LIMIT: Override memory limit for processing
 - FAISS_ALLOW_DANGEROUS_DESERIALIZATION: Override FAISS safety setting
 - PROMPT_TEMPLATE: Override prompt template
 
@@ -57,16 +58,19 @@ OLLAMA_QUERY_MODEL = os.getenv("OLLAMA_QUERY_MODEL", "CognitiveComputations/dolp
 OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
 
 # Text chunking configuration
-CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "500"))
-CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "50"))
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "800"))
+CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "80"))
 
 # FAISS configuration
 FAISS_ALLOW_DANGEROUS_DESERIALIZATION = os.getenv("FAISS_ALLOW_DANGEROUS_DESERIALIZATION", "true").lower() == "true"
 
+# Memory optimization configuration
+DEFAULT_MEMORY_LIMIT = int(os.getenv("DEFAULT_MEMORY_LIMIT", "8000"))  # In MB, 0 means no limit
+
 # Query/RAG configuration
-DEFAULT_K = int(os.getenv("DEFAULT_K", "5"))  # Number of documents to retrieve
-DEFAULT_SCORE_THRESHOLD = float(os.getenv("DEFAULT_SCORE_THRESHOLD", "0.5"))  # Minimum similarity score threshold
-DEFAULT_MAX_CONTEXT_LENGTH = int(os.getenv("DEFAULT_MAX_CONTEXT_LENGTH", "4000"))  # Maximum context length in characters
+DEFAULT_K = int(os.getenv("DEFAULT_K", "7"))  # Number of documents to retrieve
+DEFAULT_SCORE_THRESHOLD = float(os.getenv("DEFAULT_SCORE_THRESHOLD", "0.4"))  # Minimum similarity score threshold
+DEFAULT_MAX_CONTEXT_LENGTH = int(os.getenv("DEFAULT_MAX_CONTEXT_LENGTH", "6000"))  # Maximum context length in characters
 
 # Prompt template for RAG queries
 PROMPT_TEMPLATE = os.getenv("PROMPT_TEMPLATE", """
@@ -203,6 +207,15 @@ def validate_config():
     if DEFAULT_MAX_CONTEXT_LENGTH < 1000:
         issues.append(f"DEFAULT_MAX_CONTEXT_LENGTH ({DEFAULT_MAX_CONTEXT_LENGTH}) is very small, consider at least 1000")
     
+    # Check memory limit
+    try:
+        import psutil
+        total_memory_mb = psutil.virtual_memory().total / (1024 * 1024)
+        if DEFAULT_MEMORY_LIMIT > total_memory_mb * 0.9:
+            issues.append(f"DEFAULT_MEMORY_LIMIT ({DEFAULT_MEMORY_LIMIT} MB) is too close to total memory ({total_memory_mb:.0f} MB)")
+    except ImportError:
+        pass  # Skip memory validation if psutil not available
+    
     # Check if base directory is writable
     try:
         test_file = INQUIRO_BASE_DIR / "test_write.tmp"
@@ -225,6 +238,17 @@ def get_config_summary():
     """
     Returns a summary of the current configuration.
     """
+    # Try to get system memory info
+    try:
+        import psutil
+        total_memory_mb = psutil.virtual_memory().total / (1024 * 1024)
+        memory_info = f"{total_memory_mb:.0f} MB"
+        recommended_limit = max(int(total_memory_mb * 0.7), 1000)
+        memory_recommendation = f"(Recommended limit: {recommended_limit} MB)"
+    except ImportError:
+        memory_info = "Unknown (install psutil for memory monitoring)"
+        memory_recommendation = ""
+        
     return f"""
 📋 Inquiro Configuration Summary:
    Base Directory: {INQUIRO_BASE_DIR}
@@ -234,6 +258,10 @@ def get_config_summary():
    Models:
    Query Model: {OLLAMA_QUERY_MODEL}
    Embedding Model: {OLLAMA_EMBEDDING_MODEL}
+   
+   System Resources:
+   Total Memory: {memory_info}
+   Memory Limit: {'None' if DEFAULT_MEMORY_LIMIT <= 0 else f"{DEFAULT_MEMORY_LIMIT} MB"} {memory_recommendation}
    
    Text Processing:
    Chunk Size: {CHUNK_SIZE}
@@ -267,6 +295,7 @@ def validate_system():
         test_embedding = embedding_function.embed_query("test")
         if not test_embedding:
             issues.append("Embedding function not working properly")
+                
     except Exception as e:
         issues.append(f"Embedding function error: {e}")
     
@@ -292,6 +321,42 @@ def validate_system():
     return True
 
 
+def configure_memory_limit():
+    """
+    Configure memory limit for database operations.
+    Prompts the user to set a memory limit based on system resources.
+    
+    Returns:
+        int: The configured memory limit in MB (0 means no limit)
+    """
+    global DEFAULT_MEMORY_LIMIT
+    
+    try:
+        import psutil
+        total_memory_mb = psutil.virtual_memory().total / (1024 * 1024)
+        recommended_limit = max(int(total_memory_mb * 0.7), 1000)
+        
+        memory_choice = input(f"Set memory limit for database operations? [Y/n]: ").strip().lower()
+        if memory_choice in ['', 'y', 'yes']:
+            try:
+                memory_limit = input(f"Enter memory limit in MB (recommended: {recommended_limit}, current: {DEFAULT_MEMORY_LIMIT}, 0 for no limit): ").strip()
+                if memory_limit:
+                    DEFAULT_MEMORY_LIMIT = int(memory_limit)
+                    if DEFAULT_MEMORY_LIMIT > 0:
+                        print(f"✅ Memory limit set to {DEFAULT_MEMORY_LIMIT} MB")
+                    else:
+                        print("✅ No memory limit set (use with caution)")
+            except ValueError:
+                print(f"Invalid input. Using default memory limit: {DEFAULT_MEMORY_LIMIT}")
+        else:
+            print(f"✅ Using current memory limit: {'None' if DEFAULT_MEMORY_LIMIT <= 0 else f'{DEFAULT_MEMORY_LIMIT} MB'}")
+    except ImportError:
+        print("Warning: psutil not available, memory monitoring disabled")
+        print("Run: pip install psutil to enable memory monitoring")
+    
+    return DEFAULT_MEMORY_LIMIT
+
+
 # main function
 
 def main():
@@ -306,10 +371,15 @@ def main():
         ensure_directories()
         print("✅ Directories created/verified")
         
-        # Validate configuration
+        # Configure system resources (memory only)
+        print("\n📊 System resource configuration:")
+        configure_memory_limit()
+        
+        # Validate basic configuration
         validate_config()
         
         # Check ollama models
+        print("\n🤖 Model configuration:")
         check_ollama_models()
         print("✅ Ollama models verified")
         
@@ -324,8 +394,6 @@ def main():
     except Exception as e:
         print(f"❌ Configuration setup failed: {e}")
         raise
-    if validate_config():
-        print(get_config_summary())
 
 if __name__ == "__main__":
     main()

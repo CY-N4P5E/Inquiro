@@ -3,7 +3,7 @@ query_data.py
 -------------
 This module provides a command-line interface to query a FAISS vector database using 
 a Retrieval-Augmented Generation (RAG) approach. It retrieves relevant document chunks 
-from PDF and DOCX files based on a user query, constructs a prompt with the context, 
+from PDF, DOCX, and DOC files based on a user query, constructs a prompt with the context, 
 and generates an answer using an LLM (Ollama).
 
 Features:

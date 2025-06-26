@@ -10,13 +10,17 @@ textual>=0.41.0
 # Vector storage (FAISS for local use)
 faiss-cpu>=1.7.4
 
-# Document processing (PyMuPDF for PDF and Unstructured for DOCX handling)
-pymupdf>=1.23.0
-unstructured>=0.10.0
-python-docx>=0.8.11
+# Document processing
+pymupdf>=1.23.0        # For PDF handling
+unstructured>=0.10.0   # Core document extraction for DOCX/DOC
+python-docx>=0.8.11    # Better DOCX support
+pywin32>=306;platform_system=="Windows"  # For DOC files on Windows
 
 # Local model support (Ollama)
 # Note: Ollama needs to be installed separately from https://ollama.ai
+
+# System monitoring
+psutil>=5.9.0
 
 # Testing
 pytest>=7.4.0

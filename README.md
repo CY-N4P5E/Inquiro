@@ -28,6 +28,7 @@ Unlike generic AI assistants, Inquiro grounds every response in your specific do
 
 ### 🚀 **Professional Performance**
 - **High-Quality Embeddings**: Uses Nomic's state-of-the-art embedding models for semantic understanding
+- **Memory-Optimized Processing**: Batch processing with configurable memory limits for handling large document collections on systems with limited resources
 - **Efficient Vector Search**: FAISS-powered similarity search for instant document retrieval
 - **Optimized Chunking**: Intelligent text segmentation preserves context and meaning
 
@@ -45,7 +46,7 @@ Unlike generic AI assistants, Inquiro grounds every response in your specific do
 
 ```mermaid
 graph TD
-    A[📄 PDF & DOCX Documents] --> B[🔄 Document Loader]
+    A[📄 PDF, DOCX & DOC Documents] --> B[🔄 Document Loader]
     B --> C[✂️ Text Chunking]
     C --> D[🧠 Embedding Generation]
     D --> E[🗄️ FAISS Vector Store]
@@ -61,7 +62,7 @@ graph TD
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
-| **Document Processing** | PyMuPDF & Unstructured | High-fidelity PDF and DOCX text extraction |
+| **Document Processing** | PyMuPDF & Unstructured | High-fidelity PDF, DOCX, and DOC text extraction |
 | **Text Chunking** | LangChain RecursiveCharacterTextSplitter | Semantic-aware text segmentation |
 | **Embeddings** | Nomic Embed Text | High-quality vector representations |
 | **Vector Database** | FAISS | Efficient similarity search |
@@ -109,7 +110,7 @@ python ui/setup_local.py
 
 # Add your documents to the data directory
 mkdir data
-# Copy your PDF and DOCX files to ./data/
+# Copy your PDF, DOCX, and DOC files to ./data/
 
 # Build the knowledge base
 python core/populate_database.py
@@ -277,3 +278,27 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p>Made with ❤️ for researchers and knowledge workers</p>
   <p>⭐ Star this repo if you find it helpful!</p>
 </div>
+
+## 🛠️ Advanced Usage
+
+### Memory Optimization
+
+For systems with limited memory or when processing large document collections:
+
+```bash
+# Process large document sets with memory optimization
+python core/populate_database.py --optimized-memory --batch-size 500 --memory-limit 8000
+
+# Options explained:
+# --optimized-memory: Use batch processing approach (default)
+# --batch-size: Number of document chunks to process at once (default: 1000)
+# --memory-limit: Memory limit in MB (default: 0 = no limit)
+# --traditional: Use traditional processing (all documents at once)
+```
+
+The memory-optimized processing:
+
+1. Processes one document at a time to minimize peak memory usage
+2. Batches chunks into smaller groups for embedding generation
+3. Monitors system memory and adjusts processing accordingly
+4. Helps prevent out-of-memory errors on systems with limited RAM
