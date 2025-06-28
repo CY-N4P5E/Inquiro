@@ -22,7 +22,7 @@ Example usage:
 
 __version__ = "0.2.0"
 __author__ = "Inquiro Team"
-__email__ = "contact@inquiro.dev"
+__email__ = "adper0705@gmail.com"
 __license__ = "MIT"
 
 # Import key functions for convenience
