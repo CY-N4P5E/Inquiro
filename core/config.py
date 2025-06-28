@@ -46,7 +46,7 @@ from pathlib import Path
 
 # Base directory for all Inquiro data storage based on the operating system
 # Can be overridden with INQUIRO_BASE_DIR environment variable
-_default_base_dir = Path("C:/inquiro") if os.name == 'nt' else Path("/inquiro")
+_default_base_dir = Path.home() / "inquiro"
 INQUIRO_BASE_DIR = Path(os.getenv("INQUIRO_BASE_DIR", _default_base_dir))
 
 # Data storage directories
