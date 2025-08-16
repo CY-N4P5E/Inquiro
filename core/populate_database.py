@@ -586,3 +586,6 @@ def process_batch(chunks, embedding_function, existing_db):
     else:
         # Otherwise, this batch becomes our database
         return new_db
+
+if __name__ == "__main__":
+    main()

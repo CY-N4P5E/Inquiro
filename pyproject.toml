@@ -15,7 +15,7 @@ requires-python = ">=3.8"
 keywords = ["rag", "ai", "document-analysis", "research", "llm", "embeddings"]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Intended Audience :: Researchers",
+    "Intended Audience :: Science/Research",
     "Intended Audience :: Education",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -37,6 +37,9 @@ dependencies = [
     "textual>=0.41.0",
     "faiss-cpu>=1.7.4",
     "pymupdf>=1.23.0",
+    "unstructured>=0.10.0",
+    "python-docx>=0.8.11",
+    "psutil>=5.9.0",
 ]
 
 [project.optional-dependencies]
@@ -49,22 +52,23 @@ dev = [
 ]
 test = [
     "pytest>=7.4.0",
-    "pytest-cov>=4.0.0",
+]
+windows = [
+    "pywin32>=306",
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/inquiro"
-Documentation = "https://github.com/yourusername/inquiro/wiki"
-Repository = "https://github.com/yourusername/inquiro.git"
-"Bug Reports" = "https://github.com/yourusername/inquiro/issues"
+Homepage = "https://github.com/inquiro-team/inquiro"
+Documentation = "https://github.com/inquiro-team/inquiro/wiki"
+Repository = "https://github.com/inquiro-team/inquiro.git"
+"Bug Reports" = "https://github.com/inquiro-team/inquiro/issues"
 
 [project.scripts]
-inquiro = "inquiro.ui.inquiro_cli:main"
-inquiro-tui = "inquiro.ui.inquiro_tui:main"
-inquiro-setup = "inquiro.ui.setup_local:main"
+inquiro = "inquiro_cli:main"
+inquiro-tui = "inquiro_tui:main"
 
 [tool.setuptools.packages.find]
-include = ["inquiro*"]
+include = ["core*"]
 
 [tool.black]
 line-length = 88
