@@ -36,7 +36,7 @@ Environment Variables (all optional):
 - FAISS_ALLOW_DANGEROUS_DESERIALIZATION: Override FAISS safety setting
 - PROMPT_TEMPLATE: Override prompt template
 
-Author: Inquiro Development Team
+Author: ADPer
 Version: 2.0.0
 '''
 

@@ -42,7 +42,7 @@ Version: 2.0.0
 
 import argparse
 from langchain_community.vectorstores import FAISS
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 try:
     from langchain_ollama import OllamaLLM as Ollama
 except ImportError:

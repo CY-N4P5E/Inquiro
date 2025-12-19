@@ -19,6 +19,9 @@ Dependencies:
     - core.config: For centralized configuration
     
 Note: GPU acceleration is configured at the Ollama server level, not in the client code.
+
+author: ADPer
+version: 2.0.0
 """
 
 from langchain_ollama import OllamaEmbeddings

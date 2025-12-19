@@ -60,7 +60,7 @@ Dependencies:
 - faiss: Vector similarity search
 - PyMuPDF: PDF document processing
 
-Author: Inquiro Development Team
+Author: ADPer
 Version: 2.0.0
 License: See LICENSE file in project root
 """
