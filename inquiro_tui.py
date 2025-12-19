@@ -114,7 +114,7 @@ class PathInputScreen(ModalScreen):
 
     @on(Button.Pressed, "#confirm-path-btn")
     def confirm_path_action(self):
-        path = self.query_one("#path-input").value.strip()
+        path = self.query_one("#path-input", Input).value.strip()
         self.dismiss(path if path else None)
 
     @on(Button.Pressed, "#cancel-path-btn")
@@ -181,11 +181,11 @@ class ChatZone(Vertical):
             try:
                 if query_rag:
                     response = query_rag(msg)
-                    self.call_from_thread(self.add_assistant_message, response)
+                    self.app.call_from_thread(self.add_assistant_message, response)
                 else:
-                    self.call_from_thread(self.add_error_message, "Query function not available")
+                    self.app.call_from_thread(self.add_error_message, "Query function not available")
             except Exception as e:
-                self.call_from_thread(self.add_error_message, f"Query failed: {str(e)}")
+                self.app.call_from_thread(self.add_error_message, f"Query failed: {str(e)}")
         
         threading.Thread(target=run_query, daemon=True).start()
 
@@ -271,12 +271,12 @@ class ContextManagerZone(Vertical):
                 if populate_main:
                     # Run the populate function
                     populate_main()
-                    self.call_from_thread(self.update_database_status)
-                    self.call_from_thread(chat.add_system_message, "✅ Database built successfully!")
+                    self.app.call_from_thread(self.update_database_status)
+                    self.app.call_from_thread(chat.add_system_message, "✅ Database built successfully!")
                 else:
-                    self.call_from_thread(chat.add_error_message, "Populate function not available")
+                    self.app.call_from_thread(chat.add_error_message, "Populate function not available")
             except Exception as e:
-                self.call_from_thread(chat.add_error_message, f"Database build failed: {str(e)}")
+                self.app.call_from_thread(chat.add_error_message, f"Database build failed: {str(e)}")
         
         threading.Thread(target=run_populate, daemon=True).start()
 
@@ -286,18 +286,18 @@ class ContextManagerZone(Vertical):
             try:
                 if clear_database:
                     clear_database()
-                    self.call_from_thread(self.update_database_status)
-                    self.call_from_thread(
+                    self.app.call_from_thread(self.update_database_status)
+                    self.app.call_from_thread(
                         self.app.query_one(ChatZone).add_system_message, 
                         "🗑️ Database cleared successfully"
                     )
                 else:
-                    self.call_from_thread(
+                    self.app.call_from_thread(
                         self.app.query_one(ChatZone).add_error_message, 
                         "Clear function not available"
                     )
             except Exception as e:
-                self.call_from_thread(
+                self.app.call_from_thread(
                     self.app.query_one(ChatZone).add_error_message, 
                     f"Clear failed: {str(e)}"
                 )
@@ -336,7 +336,7 @@ if ($dialog.ShowDialog() -eq "OK") {
                     ["powershell", "-Command", ps_script],
                     capture_output=True,
                     text=True,
-                    creationflags=subprocess.CREATE_NO_WINDOW
+                    creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)
                 )
                 # Debug output for troubleshooting
                 chat.add_system_message(f"[DEBUG] File dialog return code: {result.returncode}")
@@ -345,14 +345,14 @@ if ($dialog.ShowDialog() -eq "OK") {
                 if result.returncode == 0 and result.stdout.strip():
                     files = [f.strip() for f in result.stdout.strip().split('\n') if f.strip()]
                     if files:
-                        self.call_from_thread(self.copy_files_to_data, files)
+                        self.app.call_from_thread(self.copy_files_to_data, files)
                     else:
-                        self.call_from_thread(chat.add_system_message, "No files selected")
+                        self.app.call_from_thread(chat.add_system_message, "No files selected")
                 else:
                     # Fallback: suggest manual path entry
-                    self.call_from_thread(chat.add_error_message, f"File dialog failed. Use 'Add Files by Path' instead. STDERR: {result.stderr}")
+                    self.app.call_from_thread(chat.add_error_message, f"File dialog failed. Use 'Add Files by Path' instead. STDERR: {result.stderr}")
             except Exception as e:
-                self.call_from_thread(chat.add_error_message, f"File explorer error: {str(e)}. Use 'Add Files by Path' instead.")
+                self.app.call_from_thread(chat.add_error_message, f"File explorer error: {str(e)}. Use 'Add Files by Path' instead.")
         
         threading.Thread(target=run_file_dialog, daemon=True).start()
 

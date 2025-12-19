@@ -36,7 +36,7 @@ Configuration:
     - DEFAULT_SCORE_THRESHOLD: Minimum similarity score
     - PROMPT_TEMPLATE: Template for context-based prompts
 
-Author: Inquiro Development Team
+Author: ADPer
 Version: 2.0.0
 """
 

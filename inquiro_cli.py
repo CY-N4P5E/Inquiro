@@ -165,7 +165,7 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-def format_response(response: str, sources: List[str] = None) -> None:
+def format_response(response: str, sources: List[str]) -> None:
     """Format and display the response beautifully."""
     print_colored("\n✨ Answer", Colors.BRIGHT_GREEN)
     print_colored("─" * 60, Colors.DIM)
@@ -287,21 +287,14 @@ def interactive_mode():
             show_thinking_animation(1.5)
             
             try:
-                response = query_rag(question)
+                result = query_rag(question)
                 
-                # Extract sources from response if they exist
-                sources = []
-                if "Sources:" in response:
-                    parts = response.split("Sources:")
-                    response = parts[0].replace("Response:", "").strip()
-                    if len(parts) > 1:
-                        sources_text = parts[1].strip()
-                        # Parse sources list - handle both list format and comma-separated
-                        if sources_text.startswith('[') and sources_text.endswith(']'):
-                            sources_text = sources_text[1:-1]  # Remove brackets
-                        sources = [s.strip().strip("'\"") for s in sources_text.split(',') if s.strip()]
-                
-                format_response(response, sources)
+                if result and isinstance(result, dict):
+                    response_text = str(result.get("answer", ""))
+                    sources = result.get("sources", [])
+                    format_response(response_text, sources)
+                else:
+                    print_colored("\n❌ No response generated or invalid format.", Colors.RED)
                 
                 # Show question count
                 print_colored(f"\n💫 Question #{question_count} answered!", Colors.BRIGHT_BLUE)
@@ -331,21 +324,14 @@ def single_question_mode(question: str):
     show_thinking_animation(1.0)
     
     try:
-        response = query_rag(question)
+        result = query_rag(question)
         
-        # Extract sources from response if they exist
-        sources = []
-        if "Sources:" in response:
-            parts = response.split("Sources:")
-            response = parts[0].replace("Response:", "").strip()
-            if len(parts) > 1:
-                sources_text = parts[1].strip()
-                # Parse sources list - handle both list format and comma-separated
-                if sources_text.startswith('[') and sources_text.endswith(']'):
-                    sources_text = sources_text[1:-1]  # Remove brackets
-                sources = [s.strip().strip("'\"") for s in sources_text.split(',') if s.strip()]
-        
-        format_response(response, sources)
+        if result and isinstance(result, dict):
+            response_text = str(result.get("answer", ""))
+            sources = result.get("sources", [])
+            format_response(response_text, sources)
+        else:
+            print_colored("\n❌ No response generated or invalid format.", Colors.RED)
         
     except Exception as e:
         print_colored(f"\n❌ Error processing question:", Colors.BRIGHT_RED)
