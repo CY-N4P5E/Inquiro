@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Inquiro CLI - Sexy Interactive Research Assistant
+Inquiro CLI - Local-first Interactive Research Assistant
 A beautiful command-line interface for document-based AI research
 """
 
 import os
-import sys
 import time
 from datetime import datetime
 from typing import Optional, List
+
+import typer
 
 from .core.query_data import query_rag
 from .core.config import FAISS_PATH, DATA_PATH
@@ -339,31 +340,39 @@ def single_question_mode(question: str):
         print_colored(f"{str(e)}", Colors.RED)
 
 
-def main():
-    """Main entry point with argument parsing."""
-    if len(sys.argv) > 1:
-        # Handle special arguments
-        if sys.argv[1] in ['--help', '-h']:
-            print_gradient_banner()
-            print_colored("\n🆘 Inquiro CLI Help", Colors.BRIGHT_YELLOW)
-            print_colored("─" * 50, Colors.DIM)
-            print_colored("Usage:", Colors.WHITE)
-            print_colored("  python inquiro_cli.py                    # Interactive mode", Colors.CYAN)
-            print_colored("  python inquiro_cli.py 'your question'    # Single question", Colors.CYAN)
-            print_colored("  python inquiro_cli.py --help             # Show this help", Colors.CYAN)
-            return
-        
-        elif sys.argv[1] in ['--version', '-v']:
-            print_colored("Inquiro CLI v1.0.0", Colors.BRIGHT_CYAN)
-            print_colored("🔬 AI-Powered Document Research Assistant", Colors.DIM)
-            return
-        
-        # Single question mode
-        question = " ".join(sys.argv[1:])
-        single_question_mode(question)
+app = typer.Typer()
+
+def version_callback(value: bool):
+    if value:
+        print_colored("Inquiro CLI v1.0.0", Colors.BRIGHT_CYAN)
+        print_colored("🔬 AI-Powered Document Research Assistant", Colors.DIM)
+        raise typer.Exit()
+
+@app.callback(invoke_without_command=True)
+def cli(
+    ctx: typer.Context,
+    question: Optional[List[str]] = typer.Argument(None, help="The question to ask. Leave empty for interactive mode."),
+    version: Optional[bool] = typer.Option(None, "--version", "-v", callback=version_callback, is_eager=True, help="Show version and exit."),
+):
+    """
+    Inquiro CLI - Local-first Interactive Research Assistant
+    A beautiful command-line interface for document-based AI research
+
+    To launch the TUI (Text User Interface), run:
+    inquiro-tui
+    """
+    if ctx.invoked_subcommand is not None:
+        return
+
+    if question:
+        question_text = " ".join(question)
+        single_question_mode(question_text)
     else:
-        # Interactive mode
         interactive_mode()
+
+
+def main():
+    app()
 
 
 if __name__ == "__main__":
