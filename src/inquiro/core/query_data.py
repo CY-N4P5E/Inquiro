@@ -49,8 +49,8 @@ except ImportError:
     
     from langchain_community.llms.ollama import Ollama
 
-from core.get_embedding import get_embedding
-from core.config import (
+from .get_embedding import get_embedding
+from .config import (
     FAISS_PATH, 
     OLLAMA_QUERY_MODEL, 
     FAISS_ALLOW_DANGEROUS_DESERIALIZATION,

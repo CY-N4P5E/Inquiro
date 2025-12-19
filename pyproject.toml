@@ -42,6 +42,10 @@ dependencies = [
     "psutil>=5.9.0",
 ]
 
+[project.scripts]
+inquiro = "inquiro.cli:main"
+inquiro-tui = "inquiro.tui:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",

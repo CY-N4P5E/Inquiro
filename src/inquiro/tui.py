@@ -12,12 +12,13 @@ import sys
 from datetime import datetime
 import threading
 import shutil
-from core.config import FAISS_PATH, DATA_PATH
+
+from .core.config import FAISS_PATH, DATA_PATH
 
 # Import our backend functions
 try:
-    from core.query_data import query_rag
-    from core.populate_database import main as populate_main, clear_database
+    from .core.query_data import query_rag
+    from .core.populate_database import main as populate_main, clear_database
 except ImportError as e:
     print(f"Warning: Could not import backend functions: {e}")
     query_rag = None
@@ -671,6 +672,10 @@ class InquiroTUI(App):
     #         print(f"[DEBUG] Button pressed: {getattr(event.button, 'id', None)} (ChatZone not found: {e})")
 
 
-if __name__ == "__main__":
+def main():
     app = InquiroTUI()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

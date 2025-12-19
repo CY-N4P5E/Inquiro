@@ -25,7 +25,7 @@ version: 2.0.0
 """
 
 from langchain_ollama import OllamaEmbeddings
-from core.config import OLLAMA_EMBEDDING_MODEL
+from .config import OLLAMA_EMBEDDING_MODEL
 
 
 def get_embedding():
