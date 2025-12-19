@@ -2,7 +2,7 @@
 
 <div align="center">
   <h1>🔬 Inquiro</h1>
-  <p><strong>AI-Powered Document Research Assistant</strong></p>
+  <p><strong>Local-first AI-Powered Document Research Assistant</strong></p>
   <p><em>Transform your documents into an intelligent knowledge base with local RAG technology</em></p>
   
   [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
@@ -15,7 +15,7 @@
 
 ## 🎯 Overview
 
-**Inquiro** is a professional-grade Retrieval-Augmented Generation (RAG) system that transforms your document collections into an intelligent, queryable knowledge base. Built for researchers, analysts, and knowledge workers who need precise, source-attributed answers from their documents.
+**Inquiro** is a Local-first Retrieval-Augmented Generation (RAG) system that transforms your document collections into an intelligent, queryable knowledge base. Built for researchers, analysts, and knowledge workers who need precise, source-attributed answers from their documents.
 
 Unlike generic AI assistants, Inquiro grounds every response in your specific documents, ensuring accuracy, relevance, and complete traceability of information sources.
 
@@ -66,7 +66,7 @@ graph TD
 | **Text Chunking** | LangChain RecursiveCharacterTextSplitter | Semantic-aware text segmentation |
 | **Embeddings** | Nomic Embed Text | High-quality vector representations |
 | **Vector Database** | FAISS | Efficient similarity search |
-| **Language Model** | Ollama (Llama 3) | Local response generation |
+| **Language Model** | Ollama (Configurable) | Local response generation (Default: Dolphin Mistral) |
 
 ## 🚀 Quick Start
 
@@ -88,29 +88,34 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ### 2. Setup Ollama Models
 
+The system is configured to use **Dolphin Mistral** and **Nomic Embed** by default, but you can use any model supported by Ollama.
+
 ```bash
-# Install required models (one-time setup)
-ollama pull llama3:8b          # Language model (~4.7GB)
-ollama pull nomic-embed-text   # Embedding model (~274MB)
+# Install default models (recommended)
+ollama pull CognitiveComputations/dolphin-mistral:7b  # Default language model
+ollama pull nomic-embed-text                          # Default embedding model
 
 # Verify installation
 ollama list
 ```
 
+> **Note**: You can change the models by setting `OLLAMA_QUERY_MODEL` and `OLLAMA_EMBEDDING_MODEL` environment variables.
+
 ### 3. Setup Your Knowledge Base
 
-```bash
-# Verify system requirements
-python ui/setup_local.py
+By default, Inquiro looks for documents in `~/inquiro/data`.
 
-# Add your documents to the data directory
-mkdir data
-# Copy your PDF, DOCX, and DOC files to ./data/
+```bash
+# Create the data directory
+mkdir -p ~/inquiro/data
+
+# Copy your PDF, DOCX, and DOC files to the data directory
+# cp my_docs/*.pdf ~/inquiro/data/
 
 # Build the knowledge base
 python core/populate_database.py
@@ -122,12 +127,12 @@ Choose your preferred interface:
 
 #### Command Line Interface
 ```bash
-python ui/inquiro_cli.py
+python inquiro_cli.py
 ```
 
 #### Terminal User Interface (Recommended)
 ```bash
-python ui/inquiro_tui.py
+python inquiro_tui.py
 ```
 
 #### Direct Query
@@ -190,37 +195,34 @@ inquiro/
 │   ├── get_embedding.py  # Embedding generation
 │   ├── populate_database.py  # Database population
 │   └── query_data.py     # Query processing
-├── 📁 ui/                # User interfaces
-│   ├── inquiro_cli.py    # Command line interface
-│   ├── inquiro_tui.py    # Terminal user interface
-│   └── setup_local.py    # System verification
-├── 📁 tests/             # Test suite
-├── 📄 requirements.txt   # Python dependencies
-└── 📄 README.md         # This file
+├── 📁 docs/              # Documentation
+├── 📄 inquiro_cli.py     # Command line interface
+├── 📄 inquiro_tui.py     # Terminal user interface
+├── 📄 pyproject.toml     # Project configuration and dependencies
+├── 📄 Makefile           # Build and maintenance tasks
+└── 📄 README.md          # This file
 ```
 
 ## 🔧 Configuration
 
-The system uses sensible defaults but can be customized via environment variables or configuration files:
+The system uses sensible defaults but can be customized via environment variables.
+
+### Directories
+By default, Inquiro stores data in your home directory (`~/inquiro`). You can override this by setting `INQUIRO_BASE_DIR`.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `DATA_PATH` | `C:/inquiro/data` (Windows) | Document storage location |
-| `FAISS_PATH` | `C:/inquiro/database` | Vector database location |
-| `CHUNK_SIZE` | `500` | Text chunk size for processing |
+| `INQUIRO_BASE_DIR` | `~/inquiro` | Root directory for application data |
+| `DATA_PATH` | `~/inquiro/data` | Document storage location |
+| `FAISS_PATH` | `~/inquiro/database/faiss_index` | Vector database location |
+
+### Models & Processing
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `OLLAMA_QUERY_MODEL` | `CognitiveComputations/dolphin-mistral:7b` | LLM for generating answers |
+| `OLLAMA_EMBEDDING_MODEL` | `nomic-embed-text` | Model for document embeddings |
+| `CHUNK_SIZE` | `800` | Text chunk size for processing |
 | `CHUNK_OVERLAP` | `50` | Overlap between chunks |
-
-## 🧪 Testing
-
-Run the test suite to verify your installation:
-
-```bash
-# Run all tests
-python -m pytest tests/
-
-# Run specific tests
-python -m pytest tests/test_rag.py -v
-```
 
 ## 🛠️ Development
 
@@ -228,7 +230,7 @@ python -m pytest tests/test_rag.py -v
 
 ```bash
 # Install development dependencies
-pip install -r requirements-dev.txt
+pip install -e .[dev]
 
 # Install pre-commit hooks
 pre-commit install

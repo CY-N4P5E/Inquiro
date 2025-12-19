@@ -36,3 +36,15 @@ help:
 	@echo "  install       - Install production dependencies"
 	@echo "  install-dev   - Install development dependencies"
 	@echo "  clean         - Clean up build artifacts"
+
+# ========================
+# ADPer specific targets
+# ========================
+
+.PHONY : nuke-venv
+
+nuke-venv:
+	@echo "Nuking virtual environment..."
+	pip uninstall -y inquiro
+	pip freeze | cut -d= -f1 | xargs pip uninstall -y
+	@echo "Virtual environment removed."
