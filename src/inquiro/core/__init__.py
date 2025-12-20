@@ -10,7 +10,7 @@ Modules:
 --------
 config.py:
     Central configuration management for the entire system including paths, models, 
-    and processing parameters. Supports environment variable overrides and system validation.
+    and processing parameters.
 
 get_embedding.py:
     Embedding function factory providing consistent access to Ollama embedding models.
@@ -79,10 +79,10 @@ from .config import (
 )
 
 # Embedding functionality
-from .get_embedding import get_embedding
+from .embedding import get_embedding
 
 # Database population functions
-from .populate_database import (
+from .database import (
     main as populate_database, 
     clear_database, 
     load_documents, 
@@ -92,7 +92,7 @@ from .populate_database import (
 )
 
 # Query processing
-from .query_data import query_rag
+from .query import query_rag
 
 # Public API
 __all__ = [
@@ -108,10 +108,10 @@ __all__ = [
     'get_config_summary',
     
     # Embedding
-    'get_embedding',
+    'embedding',
     
     # Database operations
-    'populate_database',
+    'database',
     'clear_database',
     'load_documents',
     'split_documents',

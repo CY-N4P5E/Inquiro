@@ -11,7 +11,7 @@ from typing import Optional, List
 
 import typer
 
-from .core.query_data import query_rag
+from .core.query import query_rag
 from .core.config import FAISS_PATH, DATA_PATH
 
 

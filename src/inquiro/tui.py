@@ -17,8 +17,8 @@ from .core.config import FAISS_PATH, DATA_PATH
 
 # Import our backend functions
 try:
-    from .core.query_data import query_rag
-    from .core.populate_database import main as populate_main, clear_database
+    from .core.query import query_rag
+    from .core.database import main as populate_main, clear_database
 except ImportError as e:
     print(f"Warning: Could not import backend functions: {e}")
     query_rag = None

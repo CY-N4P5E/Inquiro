@@ -3,13 +3,6 @@ Configuration file for Inquiro RAG system.
 
 This file contains all the default and recommended options necessary for the functioning of the Retrieval-Augmented Generation (RAG) system. It provides essential information such as model configuration, database paths, and data storage locations.
 
-Sections:
-- Base directory setup: Determines the root directory for all Inquiro data based on the operating system.
-- Data storage paths: Specifies where data and vector database (FAISS) indices are stored.
-- Model configuration: Sets the default models for querying and embeddings used by the RAG pipeline.
-- Text processing: Configures chunking parameters for document splitting.
-- Query settings: Configures retrieval and response generation parameters.
-
 Variables:
 - INQUIRO_BASE_DIR: Root directory for Inquiro data (OS-dependent).
 - DATA_PATH: Directory for storing data files.
@@ -23,21 +16,7 @@ Variables:
 - DEFAULT_MAX_CONTEXT_LENGTH: Maximum context length for LLM input.
 - PROMPT_TEMPLATE: Template for RAG prompts.
 
-Environment Variables (all optional):
-- INQUIRO_BASE_DIR: Override base directory
-- OLLAMA_QUERY_MODEL: Override query model
-- OLLAMA_EMBEDDING_MODEL: Override embedding model
-- CHUNK_SIZE: Override chunk size
-- CHUNK_OVERLAP: Override chunk overlap
-- DEFAULT_K: Override retrieval count
-- DEFAULT_SCORE_THRESHOLD: Override similarity threshold
-- DEFAULT_MAX_CONTEXT_LENGTH: Override max context length
-- DEFAULT_MEMORY_LIMIT: Override memory limit for processing
-- FAISS_ALLOW_DANGEROUS_DESERIALIZATION: Override FAISS safety setting
-- PROMPT_TEMPLATE: Override prompt template
-
 Author: ADPer
-Version: 2.0.0
 '''
 
 import os
@@ -45,6 +24,7 @@ import subprocess
 import platformdirs
 from pathlib import Path
 
+"""App Data storage configs"""
 # Base directory for all Inquiro data storage based on the operating system
 INQUIRO_BASE_DIR = Path(platformdirs.user_data_dir(appname="inquiro", appauthor="ADPer"))
 
@@ -52,24 +32,10 @@ INQUIRO_BASE_DIR = Path(platformdirs.user_data_dir(appname="inquiro", appauthor=
 DATA_PATH = Path.joinpath(INQUIRO_BASE_DIR, "data")
 FAISS_PATH = Path.joinpath(INQUIRO_BASE_DIR, "database", "faiss_index")
 
+"""LLM configs"""
 # Default ollama model configuration (can be overridden with environment variables)
 OLLAMA_QUERY_MODEL = os.getenv("OLLAMA_QUERY_MODEL", "CognitiveComputations/dolphin-mistral:7b")
 OLLAMA_EMBEDDING_MODEL = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
-
-# Text chunking configuration
-CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "800"))
-CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "80"))
-
-# FAISS configuration
-FAISS_ALLOW_DANGEROUS_DESERIALIZATION = os.getenv("FAISS_ALLOW_DANGEROUS_DESERIALIZATION", "true").lower() == "true"
-
-# Memory optimization configuration
-DEFAULT_MEMORY_LIMIT = int(os.getenv("DEFAULT_MEMORY_LIMIT", "8000"))  # In MB, 0 means no limit
-
-# Query/RAG configuration
-DEFAULT_K = int(os.getenv("DEFAULT_K", "7"))  # Number of documents to retrieve
-DEFAULT_SCORE_THRESHOLD = float(os.getenv("DEFAULT_SCORE_THRESHOLD", "0.4"))  # Minimum similarity score threshold
-DEFAULT_MAX_CONTEXT_LENGTH = int(os.getenv("DEFAULT_MAX_CONTEXT_LENGTH", "6000"))  # Maximum context length in characters
 
 # Prompt template for RAG queries
 PROMPT_TEMPLATE = os.getenv("PROMPT_TEMPLATE", """
@@ -82,15 +48,28 @@ Answer the question based only on the following context:
 Answer the question based on the above context: {question}
 """)
 
+# Query/RAG configuration
+DEFAULT_K = int(os.getenv("DEFAULT_K", "7"))                                       # Number of documents to retrieve
+DEFAULT_SCORE_THRESHOLD = float(os.getenv("DEFAULT_SCORE_THRESHOLD", "0.4"))       # Minimum similarity score threshold
+DEFAULT_MAX_CONTEXT_LENGTH = int(os.getenv("DEFAULT_MAX_CONTEXT_LENGTH", "6000"))  # Maximum context length in characters
+
+"""Chunking configs"""
+# Text chunking configuration
+CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "800"))
+CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "80"))
+
+"""Other required configs"""
+# FAISS configuration
+FAISS_ALLOW_DANGEROUS_DESERIALIZATION = os.getenv("FAISS_ALLOW_DANGEROUS_DESERIALIZATION", "true").lower() == "true"
+
+# Memory optimization configuration
+DEFAULT_MEMORY_LIMIT = int(os.getenv("DEFAULT_MEMORY_LIMIT", "8000"))              # In MB, 0 means no limit
+
+
 # Checking if the directories exist, if not, create them
 def ensure_directories():
     """
-    Ensures that the necessary directories for data and FAISS index exist.
-    Creates them if they do not already exist.
-    
-    Raises:
-        PermissionError: If directories cannot be created due to permissions
-        OSError: If directories cannot be created due to other OS-level issues
+    Ensures the necessary application directories exist, creates them if they don't.
     """
     directories = [
         ("Data", DATA_PATH),
@@ -125,7 +104,7 @@ def check_ollama_models():
         embedding_model_available = OLLAMA_EMBEDDING_MODEL in available_models
         
         if not query_model_available or not embedding_model_available:
-            print(f"Missing models detected:")
+            print(f"Required Models are missing:")
             if not query_model_available:
                 print(f"  - Query model '{OLLAMA_QUERY_MODEL}' not found")
             if not embedding_model_available:
@@ -289,7 +268,7 @@ def validate_system():
     
     # Check if embedding function works
     try:
-        from inquiro.core.get_embedding import get_embedding
+        from inquiro.core.embedding import get_embedding
         embedding_function = get_embedding()
         test_embedding = embedding_function.embed_query("test")
         if not test_embedding:

@@ -68,7 +68,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
 
-from .get_embedding import get_embedding
+from .embedding import get_embedding
 from .config import DATA_PATH, FAISS_PATH
 from .config import CHUNK_SIZE, CHUNK_OVERLAP
 from .config import DEFAULT_MEMORY_LIMIT

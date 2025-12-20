@@ -49,7 +49,7 @@ except ImportError:
     
     from langchain_community.llms.ollama import Ollama
 
-from .get_embedding import get_embedding
+from .embedding import get_embedding
 from .config import (
     FAISS_PATH, 
     OLLAMA_QUERY_MODEL, 
