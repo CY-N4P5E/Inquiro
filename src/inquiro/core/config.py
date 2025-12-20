@@ -290,7 +290,7 @@ def validate_system():
     
     # Check if embedding function works
     try:
-        from core.get_embedding import get_embedding
+        from inquiro.core.get_embedding import get_embedding
         embedding_function = get_embedding()
         test_embedding = embedding_function.embed_query("test")
         if not test_embedding:
