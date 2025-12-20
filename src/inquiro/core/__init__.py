@@ -12,15 +12,15 @@ config.py:
     Central configuration management for the entire system including paths, models, 
     and processing parameters.
 
-get_embedding.py:
+embedding.py:
     Embedding function factory providing consistent access to Ollama embedding models.
     Abstracts embedding generation for use across the system.
 
-populate_database.py:
+database.py:
     Document ingestion and vector database population. Handles PDF loading, text chunking,
     embedding generation, and FAISS index creation/updating with intelligent reset logic.
 
-query_data.py:
+query.py:
     RAG query processing with configurable retrieval parameters. Provides command-line
     interface for querying the knowledge base with similarity filtering and verbose output.
 
@@ -33,24 +33,6 @@ Key Features:
 - Support for both reset and incremental database updates
 - Thread-safe embedding operations
 - Comprehensive logging and validation
-
-Usage Examples:
---------------
-# Setup system configuration
-python -m core.config
-
-# Populate database with documents
-python -m core.populate_database
-
-# Query the knowledge base
-python -m core.query_data "What is machine learning?"
-
-# Programmatic usage
-from core import get_embedding, query_rag, populate_database
-from core.config import validate_system
-
-if validate_system():
-    result = query_rag("your question", k=5, verbose=True)
 
 Dependencies:
 ------------
@@ -104,10 +86,10 @@ __all__ = [
     'get_config_summary',
     
     # Embedding
-    'embedding',
+    'get_embedding',
     
     # Database operations
-    'database',
+    'populate_database',
     'clear_database',
     'load_documents',
     'split_documents',
