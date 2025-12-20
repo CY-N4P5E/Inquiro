@@ -59,10 +59,6 @@ Dependencies:
 - langchain_text_splitters: Document chunking utilities
 - faiss: Vector similarity search
 - PyMuPDF: PDF document processing
-
-Author: ADPer
-Version: 2.0.0
-License: See LICENSE file in project root
 """
 
 # Core configuration and paths

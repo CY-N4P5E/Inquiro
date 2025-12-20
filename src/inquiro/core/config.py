@@ -15,8 +15,6 @@ Variables:
 - DEFAULT_SCORE_THRESHOLD: Minimum similarity score for retrieval.
 - DEFAULT_MAX_CONTEXT_LENGTH: Maximum context length for LLM input.
 - PROMPT_TEMPLATE: Template for RAG prompts.
-
-Author: ADPer
 '''
 
 import os

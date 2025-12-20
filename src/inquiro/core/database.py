@@ -46,9 +46,6 @@ Configuration:
     - FAISS_PATH: Vector database storage location
     - CHUNK_SIZE: Size of text chunks for processing
     - CHUNK_OVERLAP: Overlap between consecutive chunks
-
-Author: ADPer
-Version: 2.0.0
 """
 
 import argparse

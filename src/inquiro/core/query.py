@@ -35,9 +35,6 @@ Configuration:
     - DEFAULT_K: Default number of documents to retrieve
     - DEFAULT_SCORE_THRESHOLD: Minimum similarity score
     - PROMPT_TEMPLATE: Template for context-based prompts
-
-Author: ADPer
-Version: 2.0.0
 """
 
 import argparse
