@@ -1,51 +1,7 @@
 """
-populate_database.py
--------------------
-This module loads PDF, DOCX, and DOC documents from the data directory, splits them into text chunks, 
-generates embeddings, and stores them in a FAISS vector database for efficient retrieval. 
-It provides modular reset/update functionality for database management.
-
-Features:
-- Intelligent database reset/update logic with user interaction
-- PDF, DOCX, and DOC document loading with PyMuPDF and Unstructured integration
-- Configurable text chunking with overlap
-- FAISS vector store creation and merging
-- Unique chunk ID generation for traceability
-- Error handling and user feedback
-- Modular command-line interface
-
-Dependencies:
-- langchain_community: For PDF, DOCX, and DOC loading and FAISS integration
-- langchain_text_splitters: For document chunking
-- core.get_embedding: For embedding generation
-- core.config: For centralized configuration
-
-CLI Usage:
-    python populate_database.py --reset           # Reset database
-    python populate_database.py --no-reset        # Update database
-    python populate_database.py                   # Interactive mode
-
-Database Operations:
-- Reset Mode: Clears existing database and rebuilds from scratch
-- Update Mode: Adds new documents to existing database
-- Interactive Mode: Prompts user for preferred operation
-
-Functions:
-    main(): Entry point with modular reset behavior and user interaction
-    determine_reset_behavior(): Handles flag logic and user prompts
-    prompt_user_for_reset(): Interactive user input for database operation
-    load_documents(): Loads PDF, DOCX, and DOC files from configured data directory
-    split_documents(): Splits documents using configurable chunking parameters
-    add_to_faiss(): Creates or updates FAISS vector store with embeddings
-    calculate_chunk_ids(): Generates unique identifiers for document chunks
-    clear_database(): Safely removes existing FAISS index
-
-Configuration:
-    All configuration imported from core.config:
-    - DATA_PATH: Directory containing PDF, DOCX, and DOC documents
-    - FAISS_PATH: Vector database storage location
-    - CHUNK_SIZE: Size of text chunks for processing
-    - CHUNK_OVERLAP: Overlap between consecutive chunks
+This module handles the ingestion of documents (PDF, DOCX, DOC) from a specified data directory, processes them into text chunks, generates embeddings, and populates a FAISS vector database.
+It includes intelligent reset logic to either clear the existing database or update it with new documents.
+It also offers memory optimization options to handle large datasets by processing documents in batches.
 """
 
 import argparse
@@ -131,17 +87,8 @@ def main():
 
 def determine_reset_behavior(reset_flag, no_reset_flag):
     """
-    Determines whether to reset the database based on command-line flags or user input.
-    
-    Args:
-        reset_flag (bool): True if --reset flag was provided
-        no_reset_flag (bool): True if --no-reset flag was provided
-    
-    Returns:
-        bool: True if database should be reset, False if it should be updated
-    
-    Raises:
-        SystemExit: If both conflicting flags are provided
+    Determines whether to reset the database.
+    Called from main().
     """
     # Check for conflicting flags
     if reset_flag and no_reset_flag:
@@ -163,9 +110,6 @@ def determine_reset_behavior(reset_flag, no_reset_flag):
 def prompt_user_for_reset():
     """
     Prompts the user to decide whether to reset or update the database.
-    
-    Returns:
-        bool: True if user wants to reset, False if user wants to update
     """
     while True:
         print("\nDatabase operation mode:")
@@ -185,9 +129,8 @@ def prompt_user_for_reset():
 def load_documents():
     """
     Loads all PDF, DOCX, and DOC files from the data directory specified by DATA_PATH.
-    Uses PyMuPDFLoader for PDF files and UnstructuredWordDocumentLoader/UnstructuredFileLoader
-    for DOCX/DOC files to extract content as Document objects.
-    Returns a list of Document objects (pages/sections).
+    
+    Returns a list of Document objects (pages/sections)
     """
     documents = []
     pdf_files = glob.glob(os.path.join(DATA_PATH, "*.pdf"))
@@ -240,13 +183,6 @@ def load_documents():
 def split_documents(documents: list[Document], batch=False):
     """
     Splits a list of Document objects into smaller text chunks using RecursiveCharacterTextSplitter.
-    
-    Args:
-        documents: List of Document objects to split
-        batch: If True, process one document at a time to save memory
-        
-    Returns:
-        A list of chunked Document objects
     """
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE,
@@ -276,11 +212,6 @@ def add_to_faiss(chunks: list[Document], batch_size=None):
     Adds a list of chunked Document objects to the FAISS vector store.
     Loads an existing FAISS index if present, or creates a new one.
     Embeddings are generated using the embedding function from get_embedding().
-    
-    Args:
-        chunks: List of Document objects to add to the database
-        batch_size: Optional batch size for processing chunks to reduce memory usage
-                   If provided, chunks will be processed in batches of this size
     """
     if not chunks:
         print("No chunks to add to database.")
@@ -393,10 +324,6 @@ def process_documents_in_batches(batch_size=1000, memory_limit=0):
     
     The function loads documents one by one, generates chunks, and adds them to the FAISS index
     in smaller batches to prevent memory overload.
-    
-    Args:
-        batch_size (int): Number of document chunks to process in a single batch
-        memory_limit (int): Memory limit in MB (0 for no limit)
     """
     try:
         import psutil
