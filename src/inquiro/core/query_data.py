@@ -188,7 +188,7 @@ def query_rag(query_text: str, k: int = DEFAULT_K, threshold: float = DEFAULT_SC
         # Load the FAISS vector database from disk
         if verbose:
             print("📂 Loading FAISS index...")
-        db = FAISS.load_local(FAISS_PATH, embedding_function, 
+        db = FAISS.load_local(str(FAISS_PATH), embedding_function, 
                              allow_dangerous_deserialization=FAISS_ALLOW_DANGEROUS_DESERIALIZATION)
     except Exception as e:
         print(f"❌ Error loading FAISS index: {e}")

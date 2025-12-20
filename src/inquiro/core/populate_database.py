@@ -300,7 +300,7 @@ def add_to_faiss(chunks: list[Document], batch_size=None):
         if os.path.exists(FAISS_PATH):
             print("Loading existing FAISS index...")
             try:
-                db = FAISS.load_local(FAISS_PATH, embedding_function, allow_dangerous_deserialization=True)
+                db = FAISS.load_local(str(FAISS_PATH), embedding_function, allow_dangerous_deserialization=True)
             except Exception as e:
                 print(f"Error loading existing index: {e}")
                 print("Will create a new FAISS index...")
@@ -320,7 +320,7 @@ def add_to_faiss(chunks: list[Document], batch_size=None):
         
         # Save the final database
         if db:
-            db.save_local(FAISS_PATH)
+            db.save_local(str(FAISS_PATH))
             print(f"✅ Saved FAISS index with {total_chunks} chunks.")
         
     else:
@@ -331,7 +331,7 @@ def add_to_faiss(chunks: list[Document], batch_size=None):
         if os.path.exists(FAISS_PATH):
             print("Loading existing FAISS index...")
             try:
-                db = FAISS.load_local(FAISS_PATH, embedding_function, allow_dangerous_deserialization=True)
+                db = FAISS.load_local(str(FAISS_PATH), embedding_function, allow_dangerous_deserialization=True)
                 
                 print("Adding new documents to existing index...")
                 
@@ -348,7 +348,7 @@ def add_to_faiss(chunks: list[Document], batch_size=None):
             db = FAISS.from_documents(chunks_with_ids, embedding_function)
 
         # Save the index
-        db.save_local(FAISS_PATH)
+        db.save_local(str(FAISS_PATH))
         print(f"✅ Saved FAISS index with {len(chunks_with_ids)} chunks.")
 
 
@@ -443,7 +443,7 @@ def process_documents_in_batches(batch_size=1000, memory_limit=0):
     if os.path.exists(FAISS_PATH):
         print("Loading existing FAISS index...")
         try:
-            db = FAISS.load_local(FAISS_PATH, embedding_function, allow_dangerous_deserialization=True)
+            db = FAISS.load_local(str(FAISS_PATH), embedding_function, allow_dangerous_deserialization=True)
         except Exception as e:
             print(f"Error loading existing index: {e}")
             print("Will create a new FAISS index...")
@@ -543,7 +543,7 @@ def process_documents_in_batches(batch_size=1000, memory_limit=0):
     
     # Save the final database
     if db:
-        db.save_local(FAISS_PATH)
+        db.save_local(str(FAISS_PATH))
         print(f"✅ Database saved with {total_chunks_processed} total chunks.")
     else:
         print("No chunks were processed. Database not updated.")

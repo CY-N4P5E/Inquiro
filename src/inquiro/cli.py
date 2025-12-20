@@ -226,7 +226,7 @@ def check_database() -> bool:
         print_colored("The vector database hasn't been created yet.", Colors.WHITE)
         print_colored("\n🔧 To get started:", Colors.BRIGHT_YELLOW)
         print_colored("1. Add PDF files to: ", Colors.WHITE, end='')
-        print_colored(DATA_PATH, Colors.CYAN)
+        print_colored(str(DATA_PATH), Colors.CYAN)
         print_colored("2. Run: ", Colors.WHITE, end='')
         print_colored("python populate_database.py", Colors.GREEN)
         print_colored("\nThis will process your documents and create the database.", Colors.DIM)

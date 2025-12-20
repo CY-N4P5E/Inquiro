@@ -42,16 +42,15 @@ Version: 2.0.0
 
 import os
 import subprocess
+import platformdirs
 from pathlib import Path
 
 # Base directory for all Inquiro data storage based on the operating system
-# Can be overridden with INQUIRO_BASE_DIR environment variable
-_default_base_dir = Path.home() / "inquiro"
-INQUIRO_BASE_DIR = Path(os.getenv("INQUIRO_BASE_DIR", _default_base_dir))
+INQUIRO_BASE_DIR = Path(platformdirs.user_data_dir(appname="inquiro", appauthor="ADPer"))
 
 # Data storage directories
-DATA_PATH = str(INQUIRO_BASE_DIR / "data")
-FAISS_PATH = str(INQUIRO_BASE_DIR / "database" / "faiss_index")
+DATA_PATH = Path.joinpath(INQUIRO_BASE_DIR, "data")
+FAISS_PATH = Path.joinpath(INQUIRO_BASE_DIR, "database", "faiss_index")
 
 # Default ollama model configuration (can be overridden with environment variables)
 OLLAMA_QUERY_MODEL = os.getenv("OLLAMA_QUERY_MODEL", "CognitiveComputations/dolphin-mistral:7b")
